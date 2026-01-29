@@ -4,7 +4,7 @@ Add your ebuids to it; it's local.
 
 To install tupoll-overlay for gentoo, use the github:
 ```
-git clone 
+git clone https://github.com/tupoll/tupoll-overlay.git
 ```
 Install using the setup program (don't forget to enter the root password when asked):
 ```
