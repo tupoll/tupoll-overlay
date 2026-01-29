@@ -79,14 +79,22 @@ path = "src/eselect_repos.rs"
 
 [[bin]]
 name = "setup19"
-path = "src/portage_repo_conf.rs"
+path = "src/emerge-rs.rs"
 
 [[bin]]
 name = "setup20"
-path = "src/new_ebuid_overlay.rs"
+path = "src/emerge-rs_1.rs"
 
 [[bin]]
 name = "setup21"
+path = "src/portage_repo_conf.rs"
+
+[[bin]]
+name = "setup22"
+path = "src/new_ebuid_overlay.rs"
+
+[[bin]]
+name = "setup23"
 path = "src/overlay_new.rs"
 
 [profile.release]
