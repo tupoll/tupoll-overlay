@@ -3,7 +3,7 @@ use std::fs;
 
 fn main() {
     
-    let bins: Vec<String> = (1..=19).map(|i| format!("setup{}", i)).collect();
+    let bins: Vec<String> = (1..=23).map(|i| format!("setup{}", i)).collect();
 
     
     for bin in &bins {
