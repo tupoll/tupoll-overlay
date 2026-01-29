@@ -36,7 +36,9 @@ src_compile() {
 }
 
 src_install() {
-	cargo_src_install	
+	cargo_src_install
+	rm "${ED}/usr/bin/tupoll-overlay" || die
+    rm "${ED}"/usr/bin/setup[0-9]* || die	
 }
 "#;
 
