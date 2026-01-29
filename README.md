@@ -1,4 +1,4 @@
-# tupoll-overlay################
+# tupoll-overlay
 The overlay is added with a simple Rust installation script and is ready to use.
 Add your ebuids to it; it's local.
 
