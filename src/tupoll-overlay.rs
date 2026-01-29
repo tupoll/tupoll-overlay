@@ -11,6 +11,7 @@ fn main() -> std::io::Result<()> {
         "dev-lang/emerge-rs/src/main.rs",
         "dev-lang/emerge-rs/files/Cargo.toml",
         "dev-lang/emerge-rs/files/src/main.rs",
+        "app-portage/tupoll-overlay/tupoll-overlay-9999.ebuild",
         "gui-wm/pinnacle/pinnacle-9999.ebuild",
         "licenses/Microsoft-Font",
         "media-video/soxbar/soxbar-9999.ebuild",
@@ -47,4 +48,3 @@ fn main() -> std::io::Result<()> {
     println!("Структура tupoll-overlay успешно создана.");
     Ok(())
 }
-
