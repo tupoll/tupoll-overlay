@@ -81,6 +81,13 @@ path = "src/eselect_repos.rs"
 name = "setup19"
 path = "src/portage_repo_conf.rs"
 
+[[bin]]
+name = "setup20"
+path = "src/new_ebuid_overlay.rs"
+
+[[bin]]
+name = "setup21"
+path = "src/overlay_new.rs"
 
 [profile.release]
 strip = true      
