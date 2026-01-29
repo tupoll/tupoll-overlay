@@ -22,6 +22,12 @@ sudo cargo clean
 rm -rf tupoll-overlay
 
 ```
+Install the overlay in the usual way and carefully update it in /tmp; there is a backup before rebooting:
+```
+eix-update
+emerge tupoll-overlay
+```
+
 For example, to install the Pinnacle window manager:
 ```
 sudo eix-update
