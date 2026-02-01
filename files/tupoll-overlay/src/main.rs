@@ -35,20 +35,17 @@ opt-level = "z"
 
 EAPI=8
 
-inherit cargo desktop
+inherit cargo git-r3
 
 DESCRIPTION="Local overlay for Gentoo linux."
 HOMEPAGE="https://github.com"
-LICENSE="MIT"
+EGIT_REPO_URI="https://github.com/tupoll/tupoll-overlay.git"
+
+LICENSE="BSD-2-Clause"
 SLOT="0"
 KEYWORDS=" "
 
-SRC_URI=""
-RESTRICT="fetch"
-
 S="${WORKDIR}/${P}/tupoll-overlay"
-
-#ECARGO_VENDOR=""
 
 RDEPEND=" "
 DEPEND="${RDEPEND}"
@@ -57,7 +54,7 @@ BDEPEND="virtual/pkgconfig"
 src_unpack() {
     mkdir -p "${WORKDIR}/${P}" || die
     cp -Rp "${FILESDIR}/tupoll-overlay" "${WORKDIR}/${P}/" || die
-    #git-r3_src_unpack
+    git-r3_src_unpack
 	cargo_live_src_unpack
 }
 
