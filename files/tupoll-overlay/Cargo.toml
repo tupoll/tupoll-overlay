@@ -5,6 +5,9 @@ edition = "2024"
 
 [dependencies]
 
+[[bin]]
+name = "tupoll-overlay"
+path = "src/main.rs"
 
 [profile.release]
 strip = true      
