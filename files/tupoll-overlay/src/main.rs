@@ -24,54 +24,10 @@ strip = true
 lto = true        
 opt-level = "z" 
     "#),  
-     
-   
-    
-    /////////////////      //////////////////      ////////////////    
+      
     
     
-        ("app-portage/tupoll-overlay/tupoll-overlay-9999.ebuild", r#"# Copyright 2026 Gentoo Authors
-# Distributed under the terms of the GNU General Public License v2
-
-EAPI=8
-
-inherit cargo git-r3
-
-DESCRIPTION="Local overlay for Gentoo linux."
-HOMEPAGE="https://github.com"
-EGIT_REPO_URI="https://github.com/tupoll/tupoll-overlay.git"
-
-LICENSE="BSD-2-Clause"
-SLOT="0"
-KEYWORDS=" "
-
-S="${WORKDIR}/${P}/tupoll-overlay"
-
-RDEPEND=" "
-DEPEND="${RDEPEND}"
-BDEPEND="virtual/pkgconfig"
-
-src_unpack() {
-    mkdir -p "${WORKDIR}/${P}" || die
-    cp -Rp "${FILESDIR}/tupoll-overlay" "${WORKDIR}/${P}/" || die
-    git-r3_src_unpack
-	cargo_live_src_unpack
-}
-
-src_configure() {
-	cargo_gen_config
-}
-
-src_compile() {
-	cargo_src_compile
-}
-
-src_install() {
-	cargo_src_install
-	insinto /usr/share/pinnacle-gentoo/pictures
-    doins pictures/*	
-}  
- "#),
+        
         ("profiles/default/linux/amd64/23.0/desktop/wayland/wayland/eapi", r#"8"#),     
         ("media-video/soxbar/soxbar-9999.ebuild", r#"EAPI=8
 inherit cargo git-r3 desktop
@@ -486,7 +442,7 @@ src_compile() {
 }
 
 src_install() {
-	cargo_src_install	
+	cargo_src_install
 }  "#), 
 
       ("gui-wm/pinnacle-gentoo/files/pinnacle-gentoo/Cargo.toml", r#"[package]
@@ -711,7 +667,7 @@ os.execute(cmd)")?;
     
      
     Ok(())
-} "##), 
+} "#), 
 
       ("gui-wm/pinnacle-gentoo/files/pinnacle-gentoo/src/left_bar.rs", r##"use std::fs::File;
 use std::io::Write;
@@ -3706,7 +3662,7 @@ scale slider {
         fs::write(full_path, content)?;
     }
         
-
+  
     println!("Настройка структуры завершена.");
     Ok(())
 }
@@ -3779,5 +3735,3 @@ priority = 1
     
     Ok(())
 }
-
-    
