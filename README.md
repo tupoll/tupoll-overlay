@@ -6,30 +6,27 @@ To install tupoll-overlay for gentoo, use the github:
 ```
 git clone https://github.com/tupoll/tupoll-overlay.git
 ```
-Install using the setup program (don't forget to enter the root password when asked):
+Install using the setup program (don't forget to enter the root password ):
 ```
-cd tupoll-overlay
-sudo -s
-cargo build --release
-cd target/release
-./tupoll-overlay
+sudo mkdir -p /var/db/repos/tupoll-overlay/app-portage/
+sudo mv -f $HOME/tupoll-overlay /var/db/repos/tupoll-overlay/app-portage/
+sudo chown -R portage:portage /var/db/repos/tupoll-overlay
+sudo ebuild /var/db/repos/tupoll-overlay/app-portage/tupoll-overlay/tupoll-overlay-9999.ebuild manifest
+sudo eix-update
+sudo emerge -av app-portage/tupoll-overlay
+sudo /usr/bin/tupoll-overlay
 ```
 
-Clean and delete the directory 🗑:
+Clean and delete the directory $HOME 🗑:
 ```
-cd $HOME/tupoll-overlay
-sudo cargo clean
-rm -rf tupoll-overlay
+rm -rf $HOME/tupoll-overlay
 
 ```
-Install the overlay in the usual way and carefully update it in /tmp; there is a backup before rebooting:
-```
-eix-update
-emerge tupoll-overlay
-```
+
 
 For example, to install the Pinnacle window manager:
 ```
+pinnacle-conifg
 sudo eix-update
 emerge --ask gui-wm/pinnacle
 ```
