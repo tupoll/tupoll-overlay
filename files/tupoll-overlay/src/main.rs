@@ -8,23 +8,7 @@ use std::io::BufRead;
 
 fn main() -> std::io::Result<()> {
     let _home_base = PathBuf::from("/var/db/repos/tupoll-overlay");
-    let _text_files = [
-    ("app-portage/tupoll-overlay/files/tupoll-overlay/Cargo.toml", r#"[package]
-name = "tupoll-overlay"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-
-[[bin]]
-name = "pinnacle-install"
-path = "src/pinnacle-install.rs"
-
-[profile.release]
-strip = true      
-lto = true        
-opt-level = "z"   
-    "#),          
+    let _text_files = [   
         ("profiles/default/linux/amd64/23.0/desktop/wayland/wayland/eapi", r#"8"#),     
         ("media-video/soxbar/soxbar-9999.ebuild", r#"EAPI=8
 inherit cargo git-r3 desktop
