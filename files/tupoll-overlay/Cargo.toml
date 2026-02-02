@@ -5,7 +5,11 @@ edition = "2024"
 
 [dependencies]
 
+[[bin]]
+name = "pinnacle-install"
+path = "src/pinnacle-install.rs"
+
 [profile.release]
 strip = true      
 lto = true        
-opt-level = "z" 
+opt-level = "z"   
