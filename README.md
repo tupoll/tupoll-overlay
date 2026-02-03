@@ -133,7 +133,7 @@ Session Lock: To lock the session on startup, edit $HOME/.config/pinnacle/src/ma
 Command::with_shell(["fish", "-c"], "swaylock -f -C ~/.config/swaylock/config").once().spawn();
 
 ```
-##Credits
+Credits
 Special thanks to the developers of these projects:
 Pinnacle WM
 Ironbar
