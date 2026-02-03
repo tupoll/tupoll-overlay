@@ -108,7 +108,7 @@ System Binaries (/usr/bin)
 | **netgraph / rxgraph / txgraph** | Network traffic widgets |
 | **vol_widget** | ALSA volume control |
 | **wp-updater** | Wallpaper updater utility |
-
+| **helper_kbd** | Keyboard Widget Helper |
 
 Wallpapers
 ```
