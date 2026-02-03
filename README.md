@@ -94,20 +94,22 @@ root ALL=(ALL) ALL
 
 ```
 System Binaries (/usr/bin)
-Binary	Description:
-```
-cpu_oval	#CPU widget
-bottom_bar	#Bottom panel
-cpu_temp_oval	#Temperature widget
-fstab-tmpfs-config	#FS configuration tool
-ironbar-config	#Generates Ironbar config
-kbd-rs	#Keyboard widget
-left_bar	#Left panel
-memory_oval	RAM widget
-netgraph / rxgraph / txgraph	#Traffic & network widgets
-vol_widget	#ALSA volume control
-wp-updater	#Wallpaper updater
-```
+
+| Component | Description |
+| :--- | :--- |
+| **cpu_oval** | CPU usage widget |
+| **bottom_bar** | Bottom panel |
+| **cpu_temp_oval** | CPU temperature widget |
+| **fstab-tmpfs-config** | File system configuration tool |
+| **ironbar-config** | Ironbar configuration generator |
+| **kbd-rs** | Keyboard layout widget |
+| **left_bar** | Left panel |
+| **memory_oval** | RAM usage widget |
+| **netgraph / rxgraph / txgraph** | Network traffic widgets |
+| **vol_widget** | ALSA volume control |
+| **wp-updater** | Wallpaper updater utility |
+
+
 Wallpapers
 ```
 Default wallpapers are located in /usr/share/pinnacle-gentoo/pictures:
@@ -115,7 +117,7 @@ tag1.jpg through tag6.jpg.
 
 ```
 
-##WARNING
+WARNING
 🔥Be careful! Some files like libzfs or efistab might appear in the overlay profiles. Check:
 /var/db/repos/tupoll-overlay/profiles/targets/amd64/wayland/make.defaults
 Usage Notes
