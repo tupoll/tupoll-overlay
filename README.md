@@ -115,7 +115,7 @@ tag1.jpg through tag6.jpg.
 
 ```
 
-[!WARNING]
+##WARNING
 🔥Be careful! Some files like libzfs or efistab might appear in the overlay profiles. Check:
 /var/db/repos/tupoll-overlay/profiles/targets/amd64/wayland/make.defaults
 Usage Notes
@@ -131,7 +131,7 @@ Session Lock: To lock the session on startup, edit $HOME/.config/pinnacle/src/ma
 Command::with_shell(["fish", "-c"], "swaylock -f -C ~/.config/swaylock/config").once().spawn();
 
 ```
-Credits
+##Credits
 Special thanks to the developers of these projects:
 Pinnacle WM
 Ironbar
