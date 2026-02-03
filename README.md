@@ -29,7 +29,7 @@ rm -rf $HOME/tupoll-overlay
 
 ```
 
-Configuration & Setup
+### 🛠️ Configuration
 Before launching the WM, follow these steps:
 1. Keywords Configuration
 Add the following entries to /etc/portage/package.accept_keywords/:
