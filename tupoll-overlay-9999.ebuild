@@ -3,7 +3,7 @@
 
 EAPI=8
 
-inherit cargo git-r3 
+inherit cargo git-r3 desktop
 
 DESCRIPTION="Local overlay for Gentoo linux."
 HOMEPAGE="https://github.com"
@@ -38,4 +38,6 @@ src_install() {
 	cargo_src_install
 	insinto /usr/share/pinnacle-gentoo/pictures
     doins pictures/*
+    doicon "accessories-dictionary.svg"
+    domenu "Pinnacle Translator.desktop"
 }  
