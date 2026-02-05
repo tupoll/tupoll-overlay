@@ -41,5 +41,6 @@ src_compile() {
 src_install() {
 	cargo_src_install
 	insinto /usr/share/pinnacle-gentoo/pictures
-    doins pictures/*	
+    doins pictures/*
+domenu "Pinnacle-translator.desktop"
 }  
