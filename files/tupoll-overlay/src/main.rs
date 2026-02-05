@@ -7,8 +7,8 @@ use std::io::Write;
 use std::io::BufRead;
 
 fn main() -> std::io::Result<()> {
-    let _home_base = PathBuf::from("/var/db/repos/tupoll-overlay");
-    let _text_files = [   
+    let home_base = PathBuf::from("/var/db/repos/tupoll-overlay");
+    let text_files = [   
         ("profiles/default/linux/amd64/23.0/desktop/wayland/wayland/eapi", r#"8"#),     
         ("media-video/soxbar/soxbar-9999.ebuild", r#"EAPI=8
 inherit cargo git-r3 desktop
@@ -310,22 +310,34 @@ pulseaudio
  mmal
 -python_single_target_python3_12
 -python_targets_python3_13
--efistub"#), ];     
+-efistub"#), ]; 
+     
+     for (rel_path, content) in &text_files {
+        let full_path = home_base.join(rel_path.trim_start_matches('/'));
+        if let Some(parent) = full_path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        fs::write(full_path, content)?;
+    }
+
+    println!("Файлы оверлея созданы /var/db/repos/*.");
     
-    let path = "/etc/portage/repos.conf/tupoll-overlay.conf";    
+   
+    
+    let path_clone = "/etc/portage/repos.conf/tupoll-overlay.conf";    
     let content = r#"[tupoll-overlay]
 location = /var/db/repos/tupoll-overlay
 auto-sync = no
 priority = 1
 "#;
 
-    if let Some(parent) = Path::new(path).parent() {
+    if let Some(parent) = Path::new(path_clone).parent() {
         fs::create_dir_all(parent)?;
     }
 
-    fs::write(path, content)?;
+    fs::write(path_clone, content)?;
 
-    println!("Успешно записан.");
+    println!("Конфигурация оверлея записана в /etc/portage/repos.conf.");
     
     
     let path = Path::new("/etc/portage/repos.conf/eselect-repo.conf");
