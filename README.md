@@ -42,7 +42,8 @@ Add the following entries to /etc/portage/package.accept_keywords/:
 media-video/soxbar **
 app-portage/tupoll-overlay ** 
 gui-wm/pinnacle **
-gui-wm/pinnacle-gentoo ** 
+gui-wm/pinnacle-gentoo **
+gui-apps/pinnacle-translator **
 
 ```
 2. Overlay Setup
@@ -139,6 +140,13 @@ Session Lock: To lock the session on startup, edit $HOME/.config/pinnacle/src/ma
 Command::with_shell(["fish", "-c"], "swaylock -f -C ~/.config/swaylock/config").once().spawn();
 
 ```
+For other programs, prepare the overlay configuration:
+```
+sudo translator-config
+sudo tupoll-overlay
+
+```
+
 ## 💖 Credits
 
 A huge shout-out to the developers of these awesome projects:
