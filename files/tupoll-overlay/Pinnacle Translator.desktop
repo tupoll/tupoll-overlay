@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=Pinnacle Translator.desktop
+Comment=Online GUI Translator
+Comment[ru]=Онлайн переводчик с графическим интерфейсом
+Type=Application
+Exec=pinnacle-translator
+TryExec=pinnacle-translator
+Terminal=false
+Icon=accessories-dictionary
+Categories=Network;Translation;Qt;GTK;
+StartupNotify=true
+Keywords=translate;language;dictionary;
+Path=
