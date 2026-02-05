@@ -13,12 +13,17 @@ git clone https://github.com/tupoll/tupoll-overlay.git
 ```
 Install using the setup program (ensure you have root privileges):
 ```
+cd $HOME/tupoll-overlay/files/tupoll-overlay/
+cargo build --release
+cd target/release/
+sudo ./tupoll-overlay
+cd
 sudo mkdir -p /var/db/repos/tupoll-overlay/app-portage/
 sudo mv -f $HOME/tupoll-overlay /var/db/repos/tupoll-overlay/app-portage/
 sudo chown -R portage:portage /var/db/repos/tupoll-overlay
 sudo ebuild /var/db/repos/tupoll-overlay/app-portage/tupoll-overlay/tupoll-overlay-9999.ebuild manifest
 sudo eix-update
-sudo emerge -av app-portage/tupoll-overlay
+sudo emerge --ask app-portage/tupoll-overlay
 sudo /usr/bin/tupoll-overlay
 
 ```
