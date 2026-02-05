@@ -2592,6 +2592,13 @@ async fn config() {
         })
         .group("Process")
         .description("Screenshot");
+//Translator
+	  input::keybind (mod_key, "t")
+        .on_press(move || {
+        Command::new("pinnacle-translator").spawn();
+        })
+        .group("Tranalate")
+        .description("Rust Translate");       
 // SOX        
     input::keybind (mod_key, "n")
         .on_press(move || {
