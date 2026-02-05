@@ -3,7 +3,7 @@
 
 EAPI=8
 
-inherit cargo git-r3 desktop
+inherit cargo git-r3 
 
 DESCRIPTION="Local overlay for Gentoo linux."
 HOMEPAGE="https://github.com"
@@ -13,11 +13,7 @@ LICENSE="BSD-2"
 SLOT="0"
 KEYWORDS=" "
 
-
-
 S="${WORKDIR}/${P}/tupoll-overlay"
-
-
 
 RDEPEND=" "
 DEPEND="${RDEPEND}"
@@ -42,5 +38,4 @@ src_install() {
 	cargo_src_install
 	insinto /usr/share/pinnacle-gentoo/pictures
     doins pictures/*
-domenu "Pinnacle Translator.desktop"
 }  
