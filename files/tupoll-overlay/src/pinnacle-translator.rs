@@ -75,7 +75,7 @@ async fn translate_call(text: String, target: String) -> String {
 fn build_ui(app: &Application) {
     let window = ApplicationWindow::builder()
         .application(app)
-        .title("Rust Translator")
+        .title("Pinnacle Translator")
         .default_width(600)
         .default_height(400)
         .build();
