@@ -109,6 +109,7 @@ System Binaries (/usr/bin)
 | **vol_widget** | ALSA volume control |
 | **wp-updater** | Wallpaper updater utility |
 | **helper_kbd** | Keyboard Widget Helper |
+| **pinnacle-translator** | Translator |
 
 Wallpapers
 ```
