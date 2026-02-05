@@ -44,8 +44,7 @@ src_compile() {
 }
 
 src_install() {
-	cargo_src_install
-	domenu "Pinnacle Translator.desktop"	
+	cargo_src_install	
 }  "#), 
 
       ("gui-apps/pinnacle-translator/files/pinnacle-translator/Cargo.toml", r#"[package]
