@@ -17,8 +17,8 @@ name = "pinnacle-install"
 path = "src/pinnacle-install.rs"
 
 [[bin]]
-name = "pinnacle-translator"
-path = "src/pinnacle-translator.rs"
+name = "translator-config"
+path = "src/translator-config.rs"
 
 
 [profile.release]
