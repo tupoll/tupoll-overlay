@@ -1,0 +1,21 @@
+[package]
+name = "pinnacle-lock"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+gtk4 = "0.10"
+pam-auth = "0.5" 
+
+[[bin]]
+name = "auth-rs"
+path = "src/bin/auth.rs"
+
+
+[profile.dev]
+opt-level = 3
+lto = true
+panic = "abort"
+debug = false
+incremental = true 
+
