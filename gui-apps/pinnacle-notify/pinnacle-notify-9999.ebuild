@@ -17,8 +17,7 @@ RESTRICT="fetch"
 S="${WORKDIR}/${P}/pinnacle-notify"
 
 RDEPEND="    
-	gui-wm/pinnacle-gentoo
-	dev-rust/wayshot	
+	gui-wm/pinnacle-gentoo	
 "
 DEPEND="${RDEPEND}"
 BDEPEND="virtual/pkgconfig"
