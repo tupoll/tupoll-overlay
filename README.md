@@ -117,6 +117,7 @@ System Binaries (/usr/bin)
 | **helper_kbd** | Keyboard Widget Helper |
 | **pinnacle-translator** | Translator |
 | **pinnacle-lock** | Screen lock |
+| **pinnacle-notify** | Service notifications |
 
 Wallpapers
 ```
