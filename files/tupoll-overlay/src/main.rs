@@ -293,7 +293,7 @@ valid_restrict:
     - test
     - userpriv        
    "#), 
-      ("profiles/metadata/repoman/repository.yaml", r#"# Регистрационные данные оверлея tupoll-overlay
+      ("metadata/repoman/repository.yaml", r#"# Регистрационные данные оверлея tupoll-overlay
 name: tupoll-overlay
 description: "Personal Gentoo overlay for Rust-based system tools and GUI apps"
 owner:
