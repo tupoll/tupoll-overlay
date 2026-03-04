@@ -7,11 +7,11 @@ edition = "2024"
 
 [[bin]]
 name = "pinnacle-install"
-path = "src/pinnacle-install.rs"
+path = "src/bin/pinnacle-install.rs"
 
 [[bin]]
 name = "translator-config"
-path = "src/translator-config.rs"
+path = "src/bin/translator-config.rs"
 
 
 [profile.release]
