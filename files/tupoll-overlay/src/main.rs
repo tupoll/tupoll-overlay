@@ -302,20 +302,18 @@ owner:
     name: "tupoll"
 status: official        
    "#),  
-      ("profiles//repo_name", r#"tupoll-overlay"#), 
+      ("profiles/repo_name", r#"tupoll-overlay"#), 
       
      ("profiles/targets/amd64/wayland/eapi", r#"8"#),  
       ("profiles/targets/amd64/wayland/use.force", r#"wayland
 lua_single_target_lua5-4
 efistub"#), 
-     ("targets/amd64/wayland/use.mask", r#"systemd
+     ("profiles/targets/amd64/wayland/use.mask", r#"systemd
 pulseaudio
 -x264
 -gnome-keyring
 -fuse
  mmal
--python_single_target_python3_12
--python_targets_python3_13
 -efistub"#), ]; 
      
      for (rel_path, content) in &text_files {
