@@ -40,20 +40,20 @@ src_install() {
 	insinto /usr/share/pinnacle-gentoo/pictures
     doins pictures/*
     doicon "accessories-dictionary.svg"
-    domenu "Pinnacle Translator.desktop"
-    domenu "Pinnacle Terminal.desktop"
-    
-     
+    domenu "Pinnacle Translator.desktop" 
 }  
 
 pkg_postinst() {
 	 fish -c /usr/bin/tupoll-overlay
 	 fish -c /usr/bin/pinnacle-install
 	 fish -c /usr/bin/translator-config
-	 
+     fish -c /usr/bin/pinnacle-terminal-config
+
      rm -fv /usr/bin/tupoll-overlay
      rm -fv /usr/bin/pinnacle-install
      rm -fv /usr/bin/translator-config
+     rm -fv /usr/bin/pinnacle-terminal-config
+
      
      elog "Всё почищено 🗑"
 }
