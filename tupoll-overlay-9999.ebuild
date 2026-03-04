@@ -42,15 +42,15 @@ src_install() {
     doicon "accessories-dictionary.svg"
     domenu "Pinnacle Translator.desktop"
     domenu "Pinnacle Terminal.desktop"
-}  
-
-pkg_postinst() {
     /usr/bin/tupoll-overlay
     elog "Структура оверлея создана ✔️"
     /usr/bin/pinnacle-install
     elog "Конфигурация для PINNACLE создана ✔️"
     /usr/bin/translator-config
     elog "Структура для переводчика готова ✔️"
+}  
+
+pkg_postinst() {
     rm -fv /usr/bin/tupoll-overlay
     rm -fv /usr/bin/pinnacle-install
     rm -fv /usr/bin/translator-config
