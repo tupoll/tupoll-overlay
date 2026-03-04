@@ -1,11 +1,3 @@
-# Copyright 2026 Gentoo Authors
-# Distributed under the terms of the GNU General Public License v2
-
-EAPI=8
-
-inherit cargo git-r3 desktop
-
-DESCRIPTION="Local overlay for Gentoo linux."
 HOMEPAGE="https://github.com"
 EGIT_REPO_URI="https://github.com/tupoll/tupoll-overlay.git"
 
@@ -40,4 +32,22 @@ src_install() {
     doins pictures/*
     doicon "accessories-dictionary.svg"
     domenu "Pinnacle Translator.desktop"
+    domenu "Pinnacle Terminal.desktop"
 }  
+
+pkg_postinst() {
+    /usr/bin/tupoll-overlay
+    elog "Структура оверлея создана ✔️"
+    /usr/bin/pinnacle-install
+    elog "Конфигурация для PINNACLE создана ✔️"
+    /usr/bin/translator-config
+    elog "Структура для переводчика готова ✔️"
+    
+}
+
+pkg_prerm() {
+    rm -fv /usr/bin/tupoll-overlay
+    rm -fv /usr/bin/pinnacle-install
+    rm -fv /usr/bin/translator-config
+     elog "Всё почищено 🗑"
+}
