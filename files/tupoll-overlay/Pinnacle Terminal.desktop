@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=VTE Pinnacle Terminal
+Comment=Custom VTE terminal wrapper
+Exec=/usr/bin/pinnacle-terminal
+Icon=utilities-terminal
+Terminal=false
+Categories=System;TerminalEmulator;
