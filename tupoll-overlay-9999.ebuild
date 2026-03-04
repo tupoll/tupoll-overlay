@@ -28,8 +28,8 @@ src_compile() {
 
 src_install() {
 	cargo_src_install
-	insinto /usr/share/pinnacle-gentoo/pictures
-    doins pictures/*
+	insinto /usr/share/pinnacle-gentoo
+    doins "/pictures/*"
     doicon "accessories-dictionary.svg"
     domenu "Pinnacle Translator.desktop"
     domenu "Pinnacle Terminal.desktop"
