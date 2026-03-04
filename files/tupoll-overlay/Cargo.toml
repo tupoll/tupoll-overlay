@@ -21,7 +21,11 @@ path = "src/bin/terminal-config.rs"
 name = "pinnacle-wallpaper-config"
 path = "src/bin/wallpaper.rs"
 
+[[bin]]
+name = "pinnacle-notify-config"
+path = "src/bin/notify.rs"
+
 [profile.release]
 strip = true      
 lto = true        
-opt-level = "z"   
+opt-level = "z" 
