@@ -60,7 +60,11 @@ sign-manifests = false
 profile-formats = portage-2
 cache-formats = md5-dict
 masters = gentoo"#),
-       ("profiles/targets/amd64/wayland/make.defaults", r#"#COMMON_FLAGS="-march=core2 -ftree-vectorize -mtune=corei7-avx -pipe"
+       ("profiles/targets/amd64/wayland/make.defaults", r#"# These settings were set by the catalyst build script that automatically
+# built this stage.
+# Please consult /usr/share/portage/config/make.conf.example for a more
+# detailed example.
+#COMMON_FLAGS="-march=core2 -ftree-vectorize -mtune=corei7-avx -pipe"
 CFLAGS="-O2 -pipe -march=native"
 CFLAGS="${COMMON_FLAGS}"
 CXXFLAGS="${COMMON_FLAGS}"
@@ -78,7 +82,7 @@ LC_MESSAGES=C.utf8
 USE="aac asm alsa a52 accessibility
     -berkdb bluetooth
      -clang cairo  corefonts -consolekit -cups -crypt -cjk
-     dbus djvu dracut dist-kernel
+     dbus djvu dracut dist-kernel dev-rust
      egl elogind -emacs extra 
      gtk4 gsm gtk gstreamer -gles -gles1 gles2 gold
      harfbuzz h264
@@ -90,24 +94,26 @@ USE="aac asm alsa a52 accessibility
     mp3 mp4 mpeg -mmal mpg123
     networkmanager
     opengl openh264 opus
-    png pango pie -pipewire-alsa -pipewire
+    -pulseaudio png pango pie -pipewire-alsa -pipewire
+    rust 
     ssh
     twolame -trash-panel-plugin
     qt6 -qt5 qml
     introspection
     udisks usb userland_GNU
-    wayland wavpack
+    wavpack
     X xwayland -xinerama -xvfb x264 xml xvid xft x265
-    vulkan  v4l -vaapi  3dnow
+    vulkan  v4l -vaapi  3dnow 
     zip zstd -zsh"
 
 FEATURES="-network-sandbox"
 
 PYTHON_TARGETS="python3_12 python3_13 python3_14"
-PYTHON_SINGLE_TARGET="python3_12"
+PYTHON_SINGLE_TARGET="python3_13"
 L10N="ru ru-RU"
-MAKEOPTS="-j4 -l5"
-#MAKEOPTS="-j2 -l3"
+#MAKEOPTS="-j4 -l5"
+MAKEOPTS="-j2 -l3"
+#MAKEOPTS="-j5 -l4"
 INPUT_DEVICES="libinput"
 #GRUB_PLATFORMS="pc"
 PORTDIR_OVERLAY="/var/db/repos/tupoll-overlay${PORTDIR_OVERLAY}"
@@ -115,7 +121,7 @@ ACCEPT_LICENSE="*"
 #VIDEO_CARDS="radeon radeonsi"
 VIDEO_CARDS="intel i915"
 GENTOO_MIRRORS="http://mirror.yandex.ru/gentoo-distfiles/ https://mirrors.evowise.com/gentoo/ https://mirrors.lug.mtu.edu/gentoo/ http://distfiles.gentoo.org"
-           "#), 
+      "#), 
         ("profiles/default/linux/amd64/23.0/desktop/wayland/eapi", r#"8"#),    
         ("profiles/default/linux/amd64/23.0/desktop/wayland/wayland/parent", r#"gentoo:default/linux/amd64/23.0/desktop
 ../../../../../../../targets/amd64/wayland"#),
