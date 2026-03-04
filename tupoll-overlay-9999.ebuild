@@ -1,3 +1,12 @@
+# Copyright 2026 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+EAPI=8
+
+inherit cargo git-r3 desktop
+
+DESCRIPTION="Local overlay for Gentoo linux."
+
 HOMEPAGE="https://github.com"
 EGIT_REPO_URI="https://github.com/tupoll/tupoll-overlay.git"
 
