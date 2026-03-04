@@ -42,12 +42,9 @@ pkg_postinst() {
     elog "Конфигурация для PINNACLE создана ✔️"
     /usr/bin/translator-config
     elog "Структура для переводчика готова ✔️"
-    
-}
-
-pkg_prerm() {
     rm -fv /usr/bin/tupoll-overlay
     rm -fv /usr/bin/pinnacle-install
     rm -fv /usr/bin/translator-config
      elog "Всё почищено 🗑"
+    
 }
