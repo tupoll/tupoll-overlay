@@ -13,6 +13,9 @@ path = "src/bin/pinnacle-install.rs"
 name = "translator-config"
 path = "src/bin/translator-config.rs"
 
+[[bin]]
+name = "pinnacle-terminal-config"
+path = "src/bin/terminal-config.rs"
 
 [profile.release]
 strip = true      
