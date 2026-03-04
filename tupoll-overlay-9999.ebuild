@@ -48,12 +48,13 @@ pkg_postinst() {
 	 fish -c /usr/bin/pinnacle-install
 	 fish -c /usr/bin/translator-config
      fish -c /usr/bin/pinnacle-terminal-config
+     fish -c /usr/bin/pinnacle-wallpaper-config
 
      rm -fv /usr/bin/tupoll-overlay
      rm -fv /usr/bin/pinnacle-install
      rm -fv /usr/bin/translator-config
      rm -fv /usr/bin/pinnacle-terminal-config
-
+     rm -fv /usr/bin/pinnacle-wallpaper-config
      
      elog "Всё почищено 🗑"
 }
