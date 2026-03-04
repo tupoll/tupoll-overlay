@@ -17,6 +17,10 @@ path = "src/bin/translator-config.rs"
 name = "pinnacle-terminal-config"
 path = "src/bin/terminal-config.rs"
 
+[[bin]]
+name = "pinnacle-wallpaper-config"
+path = "src/bin/wallpaper.rs"
+
 [profile.release]
 strip = true      
 lto = true        
