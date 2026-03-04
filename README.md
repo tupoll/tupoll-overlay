@@ -144,12 +144,7 @@ Session Lock: To lock the session on startup, edit $HOME/.config/pinnacle/src/ma
 Command::with_shell(["fish", "-c"], "swaylock -f -C ~/.config/swaylock/config").once().spawn();
 
 ```
-For other programs, prepare the overlay configuration:
-```
-sudo translator-config
-sudo tupoll-overlay
-
-```
+Preparation of the overlay is included in the ebuild, according to the logic: The binary file has been launched 🦀-->a configuration has been created in the repository.
 
 ## 💖 Credits
 
