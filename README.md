@@ -116,6 +116,7 @@ System Binaries (/usr/bin)
 | **wp-updater** | Wallpaper updater utility |
 | **helper_kbd** | Keyboard Widget Helper |
 | **pinnacle-terminal** | Terminal |
+| **pinnacle-wallpaper** | Desktop wallpaper  |
 | **pinnacle-translator** | Translator |
 | **pinnacle-lock** | Screen lock |
 | **pinnacle-notify** | Service notifications |
