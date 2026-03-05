@@ -50,6 +50,9 @@ pkg_postinst() {
      fish -c /usr/bin/pinnacle-terminal-config
      fish -c /usr/bin/pinnacle-wallpaper-config
      fish -c /usr/bin/pinnacle-notify-config
+     fish -c /usr/bin/pinnacle-lock-config
+     fish -c /usr/bin/pinnacle-screenshot-config
+     fish -c /usr/bin/pinnacle-fm-config
 
      rm -fv /usr/bin/tupoll-overlay
      rm -fv /usr/bin/pinnacle-install
@@ -57,6 +60,9 @@ pkg_postinst() {
      rm -fv /usr/bin/pinnacle-terminal-config
      rm -fv /usr/bin/pinnacle-wallpaper-config
      rm -fv /usr/bin/pinnacle-notify-config
+     rm -fv /usr/bin/pinnacle-lock-config
+     rm -fv /usr/bin/pinnacle-screenshot-config
+     rm -fv /usr/bin/pinnacle-fm-config
      
      elog "Всё почищено 🗑"
 }
