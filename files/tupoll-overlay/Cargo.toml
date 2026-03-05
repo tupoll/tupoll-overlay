@@ -23,7 +23,7 @@ path = "src/bin/wallpaper.rs"
 
 [[bin]]
 name = "pinnacle-notify-config"
-path = "src/bin/lock.rs"
+path = "src/bin/notify.rs"
 
 [[bin]]
 name = "pinnacle-lock-config"
