@@ -23,7 +23,19 @@ path = "src/bin/wallpaper.rs"
 
 [[bin]]
 name = "pinnacle-notify-config"
-path = "src/bin/notify.rs"
+path = "src/bin/lock.rs"
+
+[[bin]]
+name = "pinnacle-lock-config"
+path = "src/bin/lock.rs"
+
+[[bin]]
+name = "pinnacle-screenshot-config"
+path = "src/bin/screenshot.rs"
+
+[[bin]]
+name = "pinnacle-fm-config"
+path = "src/bin/fm.rs"
 
 [profile.release]
 strip = true      
