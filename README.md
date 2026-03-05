@@ -40,16 +40,26 @@ Before launching the WM, follow these steps:
 Add the following entries to /etc/portage/package.accept_keywords/:
 ```
 media-video/soxbar **
-app-portage/tupoll-overlay ** 
-gui-wm/pinnacle **
-gui-wm/pinnacle-gentoo **
-gui-apps/pinnacle-translator **
+app-portage/tupoll-overlay ~amd64 
+gui-wm/pinnacle ~amd64
+gui-wm/pinnacle-gentoo ~amd64
+gui-apps/pinnacle-translator ~amd64
+gui-apps/pinnacle-terminal ~amd64
+gui-apps/pinnacle-wallpaper ~amd64
+gui-apps/pinnacle-notify ~amd64
+gui-apps/pinnacle-lock ~amd64
+gui-apps/pinnacle-screenshot ~amd64
+gui-apps/pinnacle-fm ~amd64
+gui-apps/pinnacle-translator ~amd64
 
 ```
 2. Overlay Setup
-Add the ebuild to the overlay:
+Preparation of the overlay is included in the ebuild, according to the logic: The binary file has been launched 🦀-->a configuration has been created in the repository.
+
 ```
-sudo pinnacle-config
+eix-update
+sudo emerge --ask app-portage/tupoll-overlay
+sudo emerge -av pinnacle-terminal pinnacle-wallpaper pinnacle-notify pinnacle-lock pinnacle-screenshot pinnacle-fm pinnacle-translator
 
 ```
 3. File System Preparation
@@ -118,9 +128,20 @@ System Binaries (/usr/bin)
 | **pinnacle-terminal** | Terminal |
 | **pinnacle-wallpaper** | Desktop wallpaper  |
 | **pinnacle-translator** | Translator |
-| **pinnacle-lock** | Screen lock |
+| **pinnacle-lock** | Screen lock ✔️ |
 | **pinnacle-notify** | Service notifications |
+| **pinnacle-screenshot** | Screenshot program ✔️ |
+| **pinnacle-fm** | File Viewer |
 
+✔️ Unfortunately, I can’t provide an ebuild for programs right now.
+they are created automatically by my package manager - as soon as
+it will be ready finally, I will uncheck the boxes. In the meantime:
+```
+cargo install wayshot
+git clone https://github.com/jtroo/kanata.git
+cd kanata
+cargo build --release --no-default-features --features "cmd"
+```
 Wallpapers
 ```
 Default wallpapers are located in /usr/share/pinnacle-gentoo/pictures:
@@ -141,10 +162,9 @@ emerge -aC gui-libs/display-manager-init
 Session Lock: To lock the session on startup, edit $HOME/.config/pinnacle/src/main.rs. After the mako spawn line, add:
 
 ```
-Command::with_shell(["fish", "-c"], "swaylock -f -C ~/.config/swaylock/config").once().spawn();
+Command::with_shell(["fish", "-c"], "pinnacle-lock").once().spawn();
 
 ```
-Preparation of the overlay is included in the ebuild, according to the logic: The binary file has been launched 🦀-->a configuration has been created in the repository.
 
 ## 💖 Credits
 
