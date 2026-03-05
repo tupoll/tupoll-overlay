@@ -158,7 +158,7 @@ Auto-login Tuning: If you want to bypass the display manager, refer to the Gento
 emerge -aC gui-libs/display-manager-init
 
 ```
-Session Lock: To lock the session on startup, edit $HOME/.config/pinnacle/src/main.rs. After the mako spawn line, add:
+Session Lock: To lock the session on startup, edit $HOME/.config/pinnacle/src/main.rs. After the pinnacle-notify spawn line, add:
 
 ```
 Command::with_shell(["fish", "-c"], "pinnacle-lock").once().spawn();
