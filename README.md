@@ -123,7 +123,6 @@ System Binaries (/usr/bin)
 | **memory_oval** | RAM usage widget |
 | **netgraph / rxgraph / txgraph** | Network traffic widgets |
 | **vol_widget** | ALSA volume control |
-| **wp-updater** | Wallpaper updater utility |
 | **helper_kbd** | Keyboard Widget Helper |
 | **pinnacle-terminal** | Terminal |
 | **pinnacle-wallpaper** | Desktop wallpaper  |
