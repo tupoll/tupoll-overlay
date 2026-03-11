@@ -779,7 +779,7 @@ fn main() {
     }
     // 3.91 Обновление пакетов dev-rust: -u
     if args[0] == "-u" || args[0]  == "--emerge-update" {
-        let status = Command::new("writer-pc-world")
+        let status = Command::new("emerge-update")
             .args(&args[1..]) 
             .status()
             .unwrap_or_else(|_| exit(1));
