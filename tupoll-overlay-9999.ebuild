@@ -53,7 +53,7 @@ pkg_postinst() {
      fish -c /usr/bin/pinnacle-lock-config
      fish -c /usr/bin/pinnacle-screenshot-config
      fish -c /usr/bin/pinnacle-fm-config
-     fish -c /usr/bin/pkgrs-config
+     fish -c /usr/bin/pkgrs-install
      rm -fv /usr/bin/tupoll-overlay
      rm -fv /usr/bin/pinnacle-install
      rm -fv /usr/bin/translator-config
@@ -63,6 +63,6 @@ pkg_postinst() {
      rm -fv /usr/bin/pinnacle-lock-config
      rm -fv /usr/bin/pinnacle-screenshot-config
      rm -fv /usr/bin/pinnacle-fm-config
-     rm -fv /usr/bin/pkgrs-config
+     rm -fv /usr/bin/pkgrs-install
      elog "Всё почищено 🗑"
 }
