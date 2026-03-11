@@ -46,7 +46,7 @@ src_install() {
 }
 
 pkg_postinst() {   
-    elog "Это инстструкция к ипользованию pkgrs!"
+    elog "Это инструкция к ипользованию pkgrs!"
 }   "#), 
     ("sys-apps/pkgrs-man/files/Cargo.toml", r#"[package]
 name = "pkgrs-man"
