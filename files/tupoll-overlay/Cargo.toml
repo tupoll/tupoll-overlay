@@ -37,6 +37,10 @@ path = "src/bin/screenshot.rs"
 name = "pinnacle-fm-config"
 path = "src/bin/fm.rs"
 
+[[bin]]
+name = "pkgrs-install"
+path = "src/bin/pkgrs-install.rs"
+
 [profile.release]
 strip = true      
 lto = true        
