@@ -241,8 +241,7 @@ SRC_URI=""
 
 S="${WORKDIR}/${P}" # Упрощаем путь
 
-RDEPEND="sys-apps/pkgrs-man    
-"
+RDEPEND="app-portage/tupoll-overlay"
 DEPEND="${RDEPEND}"
 BDEPEND="virtual/pkgconfig"
 
