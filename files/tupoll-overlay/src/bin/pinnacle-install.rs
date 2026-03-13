@@ -19,7 +19,18 @@ SLOT="0"
 KEYWORDS=""
 PROPERTIES="live"
 
-RDEPEND="gui-wm/pinnacle-gentoo"
+RDEPEND="x11-libs/libxkbcommon
+         dev-cpp/abseil-cpp
+         dev-libs/protobuf
+         sys-auth/seatd 
+         media-libs/libdisplay-info
+         dev-libs/libinput
+         media-libs/freetype
+         x11-libs/libX11
+         x11-libs/libXrandr
+         x11-libs/libdrm
+         media-libs/vulkan-loader
+         media-libs/mesa"
 
 DEPEND="${RDEPEND}"
 
@@ -65,20 +76,16 @@ S="${WORKDIR}/${P}/pinnacle-gentoo"
 #ECARGO_VENDOR=""
 
 RDEPEND="    
-    sys-apps/kbd    
-    gui-apps/swaylock
-    gui-apps/pinnacle-translator
-    gui-apps/pinnacle-terminal
-    gui-apps/pinnacle-screenshot
-    gui-apps/pinnacle-notify
-    gui-apps/pinnacle-fm
-    dev-rust/ironbar
-    x11-base/xwayland	
-	x11-libs/cairo
-	media-libs/opusfile
-	media-sound/sox
-	media-video/soxbar
-	gui-wm/pinnacle	
+    gui-libs/gtk
+    gui-libs/gtk-layer-shell   
+    gui-libs/gtk4-layer-shell 
+    media-libs/alsa-lib
+    media-sound/alsa-utils
+    media-libs/alsa-ucm-conf
+    media-libs/alsa-topology-conf
+    media-libs/libsndfile
+    media-libs/libpulse	
+    x11-base/xwayland
 "
 DEPEND="${RDEPEND}"
 BDEPEND="virtual/pkgconfig"
