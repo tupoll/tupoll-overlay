@@ -127,14 +127,23 @@ System Binaries (/usr/bin)
 | **pinnacle-terminal** | Terminal |
 | **pinnacle-wallpaper** | Desktop wallpaper  |
 | **pinnacle-translator** | Translator |
-| **pinnacle-lock** | Screen lock ✔️ |
+| **pinnacle-lock** | Screen lock |
 | **pinnacle-notify** | Service notifications |
-| **pinnacle-screenshot** | Screenshot program ✔️ |
+| **pinnacle-screenshot** | Screenshot program |
 | **pinnacle-fm** | File Viewer |
 
-✔️ Unfortunately, I can’t provide an ebuild for programs right now.
-they are created automatically by my package manager - as soon as
-it will be ready finally, I will uncheck the boxes. In the meantime:
+To install a package from the rust repository:
+```
+pkgrs -sc wayshot
+dev-rust/wayshot-1.4.6
+      Latest version available: [from cache]
+      Description: Screenshot crate for wlroots based compositors implementing the zwlr_screencopy…
+pkgrs -wb wayshot 1.4.6
+pkgrs -i --ask dev-rust/wayshot
+
+```
+For different cargo packages there are different ways to create an ebuild. Read pkgrs-man.
+
 ```
 cargo install wayshot
 git clone https://github.com/jtroo/kanata.git
@@ -164,7 +173,27 @@ Session Lock: To lock the session on startup, edit $HOME/.config/pinnacle/src/ma
 Command::with_shell(["fish", "-c"], "pinnacle-lock").once().spawn();
 
 ```
+To start the window manager you will now have to create the file /usr/local/bin/start_pinnacle:
+```
+#!/bin/fish
+mkdir -p /run/user
+chmod 1777 /run/user
+mkdir -p /run/user/1000
+# 2. Даем права вашему пользователю
+chown 1000:1000 /run/user/1000
+# 3. Устанавливаем права доступа (важно для безопасности XDG)
+chmod 700 /run/user/1000
+###Make sure your user is 1000
+pinnacle --session
 
+```
+PKGRS - PACKAGE MANAGEMENT SYSTEM (RUST + GENTOO)
+
+DESCRIPTION:
+  pkgrs is a wrapper around Portage that seamlessly integrates
+  system repositories with the Cargo ecosystem. When searching
+  data is displayed from the local SQLite database (emerge-cargo-base).
+  
 ## 💖 Credits
 
 A huge shout-out to the developers of these awesome projects:
