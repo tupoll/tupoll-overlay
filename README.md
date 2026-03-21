@@ -51,6 +51,9 @@ gui-apps/pinnacle-lock ~amd64
 gui-apps/pinnacle-screenshot ~amd64
 gui-apps/pinnacle-fm ~amd64
 gui-apps/pinnacle-translator ~amd64
+###For those who decide to use pkgrs:
+dev-rust/* ~amd64
+dev-rust/*-* ~amd64
 
 ```
 2. Overlay Setup
@@ -173,7 +176,8 @@ Session Lock: To lock the session on startup, edit $HOME/.config/pinnacle/src/ma
 Command::with_shell(["fish", "-c"], "pinnacle-lock").once().spawn();
 
 ```
-To start the window manager you will now have to create the file /usr/local/bin/start_pinnacle:
+To start the window manager you will now have to create the file /usr/local/bin/start_pinnacle
+change the bit number of the file, or write it for sudo:
 ```
 #!/bin/fish
 mkdir -p /run/user
