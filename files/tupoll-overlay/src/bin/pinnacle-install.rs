@@ -641,6 +641,11 @@ set LC_ALL ru_RU.UTF-8
 set PATH $HOME/.cargo/bin:/sbin:/usr/sbin:/usr/local/sbin:$HOME/.local/bin:/usr/local/bin:$HOME/.local/bin:$HOME/.local/bin:$HOME/.local/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
 
 # Правильные переменные сессии
+set -gx XDG_RUNTIME_DIR /run/user/1000
+set -gx XDG_CACHE_HOME "$HOME/.cache"
+set -gx XDG_CONFIG_HOME "$HOME/.config"
+set -gx XDG_DATA_HOME "$HOME/.local/share"
+set -gx XDG_STATE_HOME "$HOME/.local/state"		 
 set -gx XDG_SESSION_TYPE wayland
 set -gx XDG_SESSION_DESKTOP pinnacle
 set -gx XDG_CURRENT_DESKTOP pinnacle
@@ -690,9 +695,11 @@ if status is-login
         # 2. Форсируем использование Vulkan (чтобы Mesa EGL не проснулась)
         set -gx SKULPIN_RENDERER vulkan
         set -gx WGPU_BACKEND vulkan
-
+        
+        set -x XDG_RUNTIME_DIR /run/user/1000
         # Запуск через dbus-run-session для работы порталов и софта
-        exec pinnacle --session
+         start_pinnacle
+         
     end
 end"#;
    
