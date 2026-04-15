@@ -55,10 +55,11 @@ edition = "2024"
 gtk4 = { version = "0.10", features = ["v4_10"] }
 libc = "0.2.182"
 serde = { version = "1.0", features = ["derive"] }
-toml = "0.8"
-glib = "0.20" 
-rusqlite = { version = "0.38", features = ["bundled"] }
-colored = "2.1"
+toml = "1.1"
+glib = "0.22" 
+rusqlite = { version = "0.39", features = ["bundled"] }
+colored = "3.1"
+pango = "0.22.0"
 
 # Это превращает src/lib.rs в библиотеку, которую можно импортировать
 [lib]
@@ -82,13 +83,131 @@ path = "src/bin/pinnacle_preview_sql.rs"
 name = "pinnacle-fm-man"
 path = "src/bin/man.rs"
 
+
 [profile.dev]
 opt-level = 3
 lto = true
 panic = "abort"
 debug = false
-incremental = true 
+incremental = true
  "#),
+
+("gui-apps/pinnacle-fm/files/pinnacle-fm/src/icon.rs", r#" use std::path::Path;
+use std::process::Command;
+use std::fs;
+use gtk4 as gtk; // Убедитесь, что используете gtk4
+use gtk::prelude::*;
+
+
+
+// В функции append_nerd_label
+pub fn append_nerd_label(container: &gtk::Box, info: &IconInfo) {
+    let label = gtk::Label::builder()
+        .use_markup(true)
+        .halign(gtk::Align::Center)
+        .valign(gtk::Align::Center)
+        .build();
+
+    // font_desc="32" — это примерно 128px визуально для иконок
+    label.set_markup(&format!(
+        "<span foreground=\"{}\" font_desc=\"48\">{}</span>", 
+        info.color, info.symbol
+    ));
+
+    // Чтобы иконка не сжималась
+    label.set_size_request(128, 128); 
+    container.append(&label);
+}
+
+/// Структура для удобного хранения символа и цвета
+pub struct IconInfo {
+    pub symbol: &'static str,
+    pub color: &'static str,
+}
+
+/// Основная функция палитры
+pub fn get_file_info(path: &Path) -> IconInfo {
+    let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+    let name_lower = file_name.to_lowercase();
+
+    // 1. ПАПКИ — Ядовито-сине-фиолетовый
+    if path.is_dir() {
+        return IconInfo { symbol: "\u{f07b}", color: "#2b00ff" };
+    }
+
+    // 2. СКРЫТЫЕ ФАЙЛЫ — Серый глаз
+    if file_name.starts_with('.') {
+        return IconInfo { symbol: "\u{f070}", color: "#555753" };
+    }
+
+    // 3. АРХИВЫ — Золотисто-янтарный (включая bz2)
+    let archive_exts = [".tar.gz", ".tar.xz", ".tar.bz2", ".zip", ".rar", ".7z", ".bz2", ".gz", ".xz"];
+    if archive_exts.iter().any(|&ext| name_lower.ends_with(ext)) {
+        return IconInfo { symbol: "\u{f1c6}", color: "#ce5c00" };
+    }
+
+    // 4. ОСТАЛЬНЫЕ ФАЙЛЫ ПО РАСШИРЕНИЮ
+    let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("");
+    let (s, c) = match ext.to_lowercase().as_str() {
+        // Исполняемые и скрипты (Золотистый терминал)
+        "sh" | "bash" | "zsh" | "fish" | "bat" | "exe" | "bin" => ("\u{f489}", "#d4a017"),
+        
+        // Программирование
+        "rs"  => ("\u{e7a8}", "#e44c30"), // Rust
+        "py"  => ("\u{e73c}", "#3572a5"), // Python
+        "lua" => ("\u{e620}", "#51a0cf"), // Lua
+        "js"  => ("\u{e74e}", "#f1e05a"), // JS
+        "cpp" => ("\u{e61d}", "#004482"), // C++
+
+        // МУЗЫКА (Ярко-пурпурный)
+        "mp3" | "flac" | "wav" | "m4a" | "ogg" | "opus" | "aac" => ("\u{f001}", "#d33682"),
+
+        // ВИДЕО (Сочный красный)
+        "avi" | "mp4" | "mkv" | "mov" | "webm" | "wmv" | "flv" => ("\u{f16a}", "#e91224"),
+
+        // ИЗОБРАЖЕНИЯ (Фиолетовый)
+        "jpg" | "jpeg" | "png" | "svg" | "webp" | "gif" | "ico" => ("\u{f1c5}", "#75507b"),
+
+        // ДОКУМЕНТЫ
+        "pdf" => ("\u{f1c1}", "#ad2224"),
+        "txt" | "md" | "conf" | "json" | "toml" | "yaml" => ("\u{f15c}", "#eeeeec"),
+
+        // Дефолтный файл (Серый)
+        _ => ("\u{f15b}", "#888a85"),
+    };
+
+    IconInfo { symbol: s, color: c }
+}
+
+/// Генерирует миниатюру видео в tmpfs через ffmpeg
+// В src/icon.rs
+#[allow(dead_code)]
+pub fn get_media_thumbnail(path: &Path) -> Option<String> {
+    let cache_dir = "/var/tmp/wm/pinnacle-cache/";
+    let _ = fs::create_dir_all(cache_dir);
+
+    let file_name = path.file_name()?.to_str()?;
+    let thumb_path = format!("{}{}.jpg", cache_dir, file_name);
+
+    if Path::new(&thumb_path).exists() {
+        return Some(thumb_path);
+    }
+
+    // Универсальная команда для видео и аудио (берет первый кадр/обложку)
+    let status = Command::new("ffmpeg")
+        .args(&[
+            "-i", path.to_str()?,
+            "-vframes", "1",
+            "-q:v", "4",
+            "-vf", "scale=128:-1",
+            &thumb_path,
+            "-y", "-loglevel", "quiet"
+        ])
+        .status();
+
+    if status.map_or(false, |s| s.success()) { Some(thumb_path) } else { None }
+} "#),
+		
     ("gui-apps/pinnacle-fm/files/pinnacle-fm/pinnacle-fm.desktop", r#"[Desktop Entry]
 Name=Pinnacle FM
 Comment=Rust & GTK4 File Manager
@@ -103,7 +222,7 @@ StartupWMClass=io.github.pinnacle_fm "#),
 use gtk::prelude::*;
 use gtk::{
     gio, glib, Application, ApplicationWindow, Box, Label, Orientation, 
-    MenuButton, Button, CssProvider, Entry, ScrolledWindow, Revealer, ListBox, Image
+    MenuButton, Button, CssProvider, Entry, ScrolledWindow, Revealer, ListBox
 };
 use std::env;
 use std::fs;
@@ -112,6 +231,11 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::cell::RefCell;
+use ::glib::format_size;
+#[path = "../icon.rs"] // Добавили две точки, так как файл теперь уровнем выше
+mod icon;
+//use gtk::glib as other_glib;
+
 
 #[derive(Deserialize, Serialize, Default, Clone)]
 struct Config {
@@ -159,21 +283,30 @@ fn prepare_environment() -> std::io::Result<()> {
         save_config(&config_path, &Config::default());
     }
     let css_path = config_dir.join("style.css");
-    let css_content = ".error-note { 
-     background: #ff5555;
-     color: white; 
-     border-radius: 5px; 
-     padding: 4px; 
-     font-weight: bold; 
-     font-family: MesloLGSDZ Nerd Font;
-     font-size: 14px;}
-.success-note { 
-      background: #50fa7b; 
-      color: #282a36; 
-      border-radius: 5px; 
-      padding: 4px; }";
-    
-    let _ = fs::write(&css_path, css_content);
+    let css_content = "
+    .error-note { 
+        background: #ff5555;
+        color: white; 
+        border-radius: 5px; 
+        padding: 4px; 
+        font-weight: bold; 
+        font-family: 'MesloLGSDZ Nerd Font';
+        font-size: 14px;
+    }
+    .success-note { 
+        background: #50fa7b; 
+        color: #282a36; 
+        border-radius: 5px; 
+        padding: 4px; 
+    }
+   
+    .file-card:hover .file-icon-nf {
+    color: #f9e2af; /* Цвет меняется при наведении на карточку */
+    transform: scale(1.2);
+    text-shadow: 0 0 10px rgba(249, 226, 175, 0.5); /* Легкое свечение */
+}
+    ";
+    let _ = fs::write(&css_path, css_content);   
     Ok(())
 }
 
@@ -188,13 +321,18 @@ fn show_toast(revealer: &Revealer, label: &Label, message: &str, is_error: bool)
     });
 }
 
-fn fill_file_list(list: &ListBox, path: &Path, cfg: &Config) {
-	pinnacle_fm::DbEngine::store_path(&path.to_string_lossy());
+
+    fn fill_file_list(list: &ListBox, path: &Path, cfg: &Config) {
+    pinnacle_fm::DbEngine::store_path(&path.to_string_lossy());
+    
+    // Очищаем старый список
     while let Some(child) = list.first_child() {
         list.remove(&child);
     }
+
     if let Ok(entries) = fs::read_dir(path) {
         let mut entries_vec: Vec<_> = entries.flatten().collect();
+        // Сортировка: папки сверху
         entries_vec.sort_by(|a, b| {
             let a_dir = a.path().is_dir();
             let b_dir = b.path().is_dir();
@@ -202,52 +340,238 @@ fn fill_file_list(list: &ListBox, path: &Path, cfg: &Config) {
             else { a.file_name().cmp(&b.file_name()) }
         });
 
-        for entry in entries_vec {
+               for entry in entries_vec {
             let p = entry.path();
             let name = entry.file_name().to_string_lossy().to_string();
             if !cfg.show_hidden && name.starts_with('.') { continue; }
 
-            let row_box = Box::new(Orientation::Horizontal, 10);
-            
-            // 1. Иконка
-            let icon_name = if p.is_dir() { "folder-symbolic" } else { "text-x-generic-symbolic" };
-            row_box.append(&Image::from_icon_name(icon_name));
+            // ПОЛНОСТЬЮ ВЕРТИКАЛЬНАЯ СТРОКА
+            let row_box = Box::new(Orientation::Vertical, 4); // 4 — отступ между этажами
+            row_box.set_widget_name(&p.to_string_lossy());
+            row_box.set_margin_start(12);
+            row_box.set_margin_bottom(8); // Отступ между файлами
 
-            // 2. Имя файла (Label) - hexpand выталкивает кнопку вправо
-            let label = Label::new(Some(&name));
-            label.set_hexpand(true); 
-            label.set_xalign(0.0);   
+            // 1. Иконка (Верхний этаж)
+            let icon = gtk::Image::from_icon_name(if p.is_dir() { "folder-symbolic" } else { "text-x-generic-symbolic" });
+//            let icon_text = if p.is_dir() { "📁" } else { "📄" };
+//            let icon = gtk::Label::new(Some(icon_text));
+
+            icon.set_pixel_size(32);
+            icon.set_halign(gtk::Align::Start); // Прижать к левому краю
+            row_box.append(&icon);
+
+            // 2. Имя (Второй этаж)
+            let label = Label::builder()
+                .label(&name)
+                .halign(gtk::Align::Start) // Вместо xalign используем halign
+                .build();
             row_box.append(&label);
 
-            // 3. Кнопка меню
+            // 3. Размер (Третий этаж)
+           let metadata = entry.metadata().ok();
+           let bytes = metadata.map(|m| m.len()).unwrap_or(0);
+
+// Вызываем функцию (теперь ворнинг точно уйдет)
+let size_str = if p.is_dir() { String::new() } else { format_size(bytes).to_string() };
+
+let size_label = Label::builder()
+    .label(&size_str)
+    .halign(gtk::Align::Start) // В списке лучше прижать к левому краю
+    .css_classes(["dim-label"])
+    .build();
+
+row_box.append(&size_label);
+            // 4. Кнопка меню (Нижний этаж)
             let menu_btn = MenuButton::builder()
                 .icon_name("view-more-symbolic")
                 .css_classes(["flat"])
+                .halign(gtk::Align::Start)
                 .build();
-
-            // 4. Поповер из либы (теперь с двумя путями: ЧТО и КУДА)
-            let menu = pinnacle_fm::FileMenu::create_for_path(
-                p.to_string_lossy().to_string(), 
-                path.to_string_lossy().to_string()
-            );
-
-            // 5. СВЯЗЫВАЕМ И КЛАДЕМ В СТРОКУ
+            
+            let menu = pinnacle_fm::FileMenu::create_for_path(p.to_string_lossy().to_string(), path.to_string_lossy().to_string());
             menu_btn.set_popover(Some(&menu));
             row_box.append(&menu_btn);
 
-            // Оформление строки
-            row_box.set_margin_start(12); 
-            row_box.set_margin_end(6);
-            row_box.set_margin_top(6); 
-            row_box.set_margin_bottom(6);
-            row_box.set_widget_name(&p.to_string_lossy());
-            
             list.append(&row_box);
         }
+
     }
 }
 
+  fn fill_file_grid(list: &ListBox, path: &Path, cfg: &Config, last_selected: Rc<RefCell<String>>) {
+    pinnacle_fm::DbEngine::store_path(&path.to_string_lossy());
+    
+    // 1. Очистка старого содержимого
+    while let Some(child) = list.first_child() {
+        list.remove(&child);
+    }
 
+    // 2. Расчет колонок (динамика от 2 до 6 в зависимости от ширины)
+    let width = list.width();
+    let columns = (width / 160).clamp(2, 6);
+
+    if let Ok(entries) = fs::read_dir(path) {
+        let mut entries_vec: Vec<_> = entries.flatten()
+            .filter(|e| cfg.show_hidden || !e.file_name().to_string_lossy().starts_with('.'))
+            .collect();
+
+        // Сортировка: папки всегда сверху
+        entries_vec.sort_by(|a, b| {
+            let a_dir = a.path().is_dir();
+            let b_dir = b.path().is_dir();
+            if a_dir != b_dir { b_dir.cmp(&a_dir) }
+            else { a.file_name().cmp(&b.file_name()) }
+        });
+
+        // 3. Создание сетки через горизонтальные ряды
+        for chunk in entries_vec.chunks(columns as usize) {
+            let row_layout = Box::builder()
+                .orientation(Orientation::Horizontal)
+                .homogeneous(true) // Одинаковая ширина колонок
+                .spacing(12)
+                .margin_start(12)
+                .margin_end(12)
+                .margin_bottom(15)
+                .build();
+
+            for entry in chunk {
+                let p = entry.path();
+                let p_str = p.to_string_lossy().to_string();
+                let name = entry.file_name().to_string_lossy().to_string();
+
+                // КАРТОЧКА ФАЙЛА (Лэйаут)
+                let item_box = Box::new(Orientation::Vertical, 6);
+                item_box.add_css_class("file-card"); // Класс для подсветки из CSS
+                item_box.set_focusable(true);
+                item_box.set_cursor_from_name(Some("pointer"));
+
+ // 1. Создаем контейнер и сразу ставим Nerd-иконку как заглушку
+let icon_container = gtk::Box::new(gtk::Orientation::Vertical, 0);
+icon_container.set_size_request(128, 128);
+
+let info = icon::get_file_info(&p);
+icon::append_nerd_label(&icon_container, &info);
+
+// 2. Подготовленные данные для отложенной загрузки
+let ext = p.extension().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
+let p_path = p.to_path_buf();
+let c_box = icon_container.clone();
+
+// 3. Отложенная загрузка (выполнится сразу после отрисовки окна)
+if matches!(ext.as_str(), "jpg" | "jpeg" | "png" | "webp" | "gif" | "mp4" | "mkv" | "mp3" | "flac") {
+    glib::idle_add_local(move || {
+        let thumb_path = if matches!(ext.as_str(), "mp4" | "mkv" | "mp3" | "flac") {
+            icon::get_media_thumbnail(&p_path)
+        } else {
+            Some(p_path.to_string_lossy().into_owned())
+        };
+
+        if let Some(t) = thumb_path {
+            if let Ok(pb) = gtk::gdk_pixbuf::Pixbuf::from_file_at_size(&t, 128, 128) {
+                // Если картинка загрузилась, убираем Nerd-иконку и ставим превью
+                if let Some(child) = c_box.first_child() {
+                    c_box.remove(&child);
+                }
+                let img = gtk::Image::from_pixbuf(Some(&pb));
+                img.set_pixel_size(128);
+                c_box.append(&img);
+            }
+        }
+        glib::ControlFlow::Break // Выполнить один раз
+    });
+}
+
+item_box.append(&icon_container);
+
+
+
+                // Имя (центровка + перенос + фикс GString)
+                let label = Label::builder()
+                    .label(name.clone())
+                    .halign(gtk::Align::Center)
+                    .wrap(true)
+                    .wrap_mode(gtk::pango::WrapMode::WordChar)
+                    .max_width_chars(15)
+                    .build();
+                item_box.append(&label);
+                
+       let metadata = entry.metadata().ok();
+       let size_text = if p.is_dir() {
+        String::new() 
+      } else {
+    // ВЫЗЫВАЕМ ТУ САМУЮ ФУНКЦИЮ format_size
+       let bytes = metadata.map(|m| m.len()).unwrap_or(0);
+       format_size(bytes).to_string() 
+};
+
+let size_label = Label::builder()
+    .label(size_text)
+    .halign(gtk::Align::Center)
+    .css_classes(["dim-label"]) // Делаем текст чуть бледнее (если есть в CSS)
+    .build();
+
+if !p.is_dir() {
+    item_box.append(&size_label);
+}
+
+                // Кнопка меню (MenuButton, а не Builder!)
+                let menu_btn = MenuButton::builder()
+                    .icon_name("view-more-symbolic")
+                    .css_classes(["flat"])
+                    .halign(gtk::Align::Center)
+                    .build();
+                let menu = pinnacle_fm::FileMenu::create_for_path(p_str.clone(), path.to_string_lossy().to_string());
+                menu_btn.set_popover(Some(&menu));
+                item_box.append(&menu_btn);
+
+                // --- ЛОГИКА МЫШИ (ОДИНАРНЫЙ КЛИК) ---
+                let gesture = gtk::GestureClick::new();
+                let p_clone = p.clone();
+                let list_clone = list.clone();
+                let ls_c = last_selected.clone(); // Клон для записи выбора
+                let cfg_clone = cfg.clone();
+
+               gesture.connect_released(move |_, n_press, _, _| {
+    if n_press == 1 {
+        // 1. Запоминаем выбор для меню
+        *ls_c.borrow_mut() = p_clone.to_string_lossy().to_string();
+
+        if p_clone.is_dir() {
+            // Переход по папке
+            fill_file_grid(&list_clone, &p_clone, &cfg_clone, ls_c.clone());
+        } else {
+            // --- ЛОГИКА АССОЦИАЦИЙ ИЗ ВАШЕГО КОДА ---
+            let ext = p_clone.extension().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
+            
+            // Проверяем ваш HashMap associations
+            if let Some(app_id) = cfg_clone.associations.get(&ext) {
+                if let Some(app) = gio::AppInfo::all().into_iter()
+                    .find(|a| a.id().map(|id| id == *app_id).unwrap_or(false)) 
+                {
+                    let _ = app.launch(&[gio::File::for_path(&p_clone)], None::<&gio::AppLaunchContext>);
+                    return;
+                }
+            }
+            // Если в конфиге пусто — запускаем системный по умолчанию
+            let _ = gio::AppInfo::launch_default_for_uri(
+                &format!("file://{}", p_clone.display()), 
+                None::<&gio::AppLaunchContext>
+            );
+        }
+    }
+});
+
+                item_box.add_controller(gesture);
+
+                row_layout.append(&item_box);
+            }
+            list.append(&row_layout);
+        }
+    }
+    
+    // ВАЖНО: Убираем синюю полосу на весь ряд
+    list.set_selection_mode(gtk::SelectionMode::None);
+}
 
 // --- ДИАЛОГИ ---
 
@@ -367,9 +691,32 @@ fn show_associations_dialog(parent: &ApplicationWindow, config_path: &PathBuf) {
     dialog.present();
 }
 
+
 // --- BUILD UI ---
 
 fn build_ui(app: &Application) {
+	    // 1. Подключаем стили для подсветки карточек
+    let provider = CssProvider::new();
+    provider.load_from_data("
+        .file-card { 
+            padding: 10px; 
+            border-radius: 8px; 
+        }
+        .file-card:hover { 
+            background-color: rgba(255, 255, 255, 0.08); 
+        }
+    ");
+
+    // ИСПОЛЬЗУЕМ gdk ДЛЯ ПОЛУЧЕНИЯ ДИСПЛЕЯ
+    if let Some(display) = gtk::gdk::Display::default() {
+        gtk::style_context_add_provider_for_display(
+            &display,
+            &provider,
+            gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+        );
+    }
+    
+
     let home = env::var("HOME").unwrap_or_default();
     let config_path = PathBuf::from(&home).join(".config/pinnacle-fm/config.toml");
     
@@ -393,16 +740,17 @@ fn build_ui(app: &Application) {
     let user = std::env::var("USER").unwrap_or_else(|_| "default".to_string());
     
     let places = [
-        ("🏠 Домой", home.clone()), 
-        ("📥 Загрузки", format!("{}/Downloads", home)), 
-        ("📂 Документы", format!("{}/Documents", home)), 
-        ("🎼 Музыка", format!("{}/Музыка", home)), 
-        ("🎨 Изображения", format!("{}/Изображения", home)), 
-        ("---", String::new()), // Разделитель 1
-        ("🧰 Системные разделы", "/".to_string()), 
-        ("---", String::new()), // Разделитель 2
-        ("🏷 USB", format!("/run/media/{}/", user)) 
-    ];
+    ("\u{f015}  Домой", home.clone()), 
+    ("\u{f019}  Загрузки", format!("{}/Downloads", home)), 
+    ("\u{f15c}  Документы", format!("{}/Documents", home)), 
+    ("\u{f001}  Музыка", format!("{}/Музыка", home)), 
+    ("\u{f1c5}  Изображения", format!("{}/Изображения", home)), 
+    ("---", String::new()), 
+    ("\u{f17c}  Система", "/".to_string()), 
+    ("---", String::new()), 
+    ("\u{f0a0}  USB", format!("/run/media/{}/", user)) 
+];
+
 
     for (name, path) in places {
         if name == "---" {
@@ -436,29 +784,129 @@ fn build_ui(app: &Application) {
     let status_label = Label::builder().label("Готов").hexpand(true).xalign(0.0).margin_start(10).build();
     let menu_button = MenuButton::builder().icon_name("view-more-symbolic").build();
     
-    let file_list = ListBox::builder().build();
-    let file_scroll = ScrolledWindow::builder().vexpand(true).child(&file_list).build();
+   // Найди создание списка
+   // Возвращаем как было
+    let file_list = ListBox::builder()
+    .selection_mode(gtk::SelectionMode::Single)
+    .build();
 
-    let up_btn = Button::builder().icon_name("go-up-symbolic").build();
+
+// Найди ScrolledWindow, в котором он лежит
+    let file_scroll = ScrolledWindow::builder()
+    .hexpand(true) // Важно: контейнер ТОЖЕ должен тянуться
+    .vexpand(true)
+    .child(&file_list)
+    .build();
+
+
+        let up_btn = Button::builder().icon_name("go-up-symbolic").build();
     let add_file_btn = Button::builder().icon_name("document-new-symbolic").build();
     let add_dir_btn = Button::builder().icon_name("folder-new-symbolic").build();
 
+    // 1. Создаем кнопку "Вид"
+   // Там, где создаете view_btn:
+    let view_btn = Button::builder()
+    .icon_name("view-list-bullet-symbolic") // Показываем иконку списка, так как мы УЖЕ в сетке
+    .build();
+
+
+// Переменная для отслеживания текущего вида (true = сетка, false = список)
+    let is_grid = Rc::new(RefCell::new(true)); 
+   // 1. Сначала создаем тот самый btn_c, который потерялся
+
+    let btn_c = view_btn.clone(); 
+
+    // 2. Создаем клоны специально для внутренностей замыкания (чтобы не "красть" оригиналы)
+    let fl_for_btn = file_list.clone(); 
+    let cd_for_btn = current_dir.clone();
+    let cfg_for_btn = current_config.clone();
+    let ls_for_btn = last_selected.clone();
+    let is_grid_for_btn = is_grid.clone();
+    let btn_handle = btn_c.clone(); // Для смены иконки внутри
+
+    // 3. Вешаем событие (оно заберет клоны "for_btn")
+    btn_c.connect_clicked(move |_| {
+        let mut grid = is_grid_for_btn.borrow_mut();
+        *grid = !*grid; 
+        
+        if *grid {
+            btn_handle.set_icon_name("view-list-bullet-symbolic");
+            fill_file_grid(&fl_for_btn, &cd_for_btn.borrow(), &cfg_for_btn.borrow(), ls_for_btn.clone());
+        } else {
+            btn_handle.set_icon_name("view-grid-symbolic");
+            fill_file_list(&fl_for_btn, &cd_for_btn.borrow(), &cfg_for_btn.borrow());
+           
+        }
+    });
+
+    // 4. Отрисовка при запуске (используем ОРИГИНАЛЬНЫЕ переменные, они выжили!)
+    fill_file_grid(&file_list, &current_dir.borrow(), &current_config.borrow(), last_selected.clone());
+
+    // --- ИСПРАВЛЕННАЯ ШАПКА ---
+let header_box = gtk::Grid::builder()
+    .column_spacing(10)
+    .margin_start(12)
+    .margin_end(6)
+    .opacity(0.5)
+    .build();
+
+// 0. Пустое место под иконку (ширина 30)
+let h_pad_left = Box::builder().width_request(30).build();
+header_box.attach(&h_pad_left, 0, 0, 1, 1);
+
+// 1. Заголовок "Имя"
+let h_name = Label::builder().label("Имя").hexpand(true).xalign(0.0).build();
+header_box.attach(&h_name, 1, 0, 1, 1);
+
+// 2. Заголовок "Размер"
+let h_size = Label::builder().label("Размер").width_request(100).xalign(0.0).build();
+header_box.attach(&h_size, 2, 0, 1, 1);
+
+// 3. Пустое место под кнопку меню (ширина 40)
+let h_pad_right = Box::builder().width_request(40).build();
+header_box.attach(&h_pad_right, 3, 0, 1, 1);
+
+right_vbox.append(&header_box);
+
+
+    // Устанавливаем начальную видимость шапки из конфига
+    header_box.set_visible(current_config.borrow().show_size);
+
     top_bar.append(&up_btn);
+    top_bar.append(&view_btn); 
     top_bar.append(&add_file_btn);
     top_bar.append(&add_dir_btn);
     top_bar.append(&status_label);
     top_bar.append(&menu_button);
     
     right_vbox.append(&top_bar);
+    right_vbox.append(&header_box); 
     right_vbox.append(&file_scroll);
 
     content_hbox.append(&sidebar_scroll);
     content_hbox.append(&right_vbox);
     main_vbox.append(&content_hbox);
 
-    fill_file_list(&file_list, &current_dir.borrow(), &current_config.borrow());
+   let btn_v = view_btn.clone();
 
-    // --- ОБРАБОТЧИКИ ---
+// 1. Создаем персональный клон для ЭТОЙ кнопки
+    let ls_for_v = last_selected.clone();
+    let fl_v = file_list.clone();
+    let cd_v = current_dir.clone();
+    let cfg_v = current_config.clone();
+    let is_grid_v = is_grid.clone();
+
+btn_v.clone().connect_clicked(move |_| {
+    let _grid_state = is_grid_v.borrow(); 
+    // 2. Используем КЛОН ls_for_v вместо оригинала
+    fill_file_grid(&fl_v, &cd_v.borrow(), &cfg_v.borrow(), ls_for_v.clone());
+});
+
+// 3. Теперь оригинальный last_selected ЖИВ для финального вызова в конце!
+fill_file_grid(&file_list, &current_dir.borrow(), &current_config.borrow(), last_selected.clone());
+
+// ПЕРВИЧНАЯ ОТРИСОВКА (используем оригиналы, они теперь свободны)
+    fill_file_grid(&file_list, &current_dir.borrow(), &current_config.borrow(), last_selected.clone());
         // --- ОБРАБОТЧИКИ КЛАВИАТУРЫ ---
     let key_controller = gtk::EventControllerKey::new();
 
@@ -508,98 +956,92 @@ fn build_ui(app: &Application) {
 
     window.add_controller(key_controller);
 
-    let fl_s = file_list.clone(); let cd_s = current_dir.clone(); let cfg_s = current_config.clone(); let sl_s = status_label.clone();
-        // Просто вставляем чистую логику
+    let _fl_s = file_list.clone(); let _cd_s = current_dir.clone(); let _cfg_s = current_config.clone(); let _sl_s = status_label.clone();
+        
+        let fl_s = file_list.clone(); 
+    let cd_s = current_dir.clone(); 
+    let cfg_s = current_config.clone(); 
+    let ls_s = last_selected.clone(); 
+
     sidebar_list.connect_row_activated(move |_, row| {
         if let Some(widget) = row.child() {
-            // 1. Игнорируем сепаратор
-            if widget.type_().name() == "GtkSeparator" {
-                return; 
-            }
+            if widget.type_().name() == "GtkSeparator" { return; }
 
-            // 2. Получаем путь
-            let path_str = widget.widget_name().to_string();
-            if !path_str.is_empty() {
-                let p_buf = std::path::PathBuf::from(&path_str);
-
-                // 3. Обновляем состояние
-                {
-                    let mut curr = cd_s.borrow_mut(); // Используй те имена клонов, что создал выше
-                    *curr = p_buf.clone();
-                }
-
-                // 4. Обновляем UI
-                sl_s.set_label(&path_str);
-                fill_file_list(&fl_s, &p_buf, &cfg_s.borrow());
+            if let Some(label) = widget.downcast_ref::<Label>() {
+                let path_str = label.widget_name().to_string();
+                if path_str.is_empty() { return; }
                 
-                println!(">>> Переход из Sidebar к: {}", path_str);
+                let path = PathBuf::from(&path_str);
+                *cd_s.borrow_mut() = path.clone();
+                let list_clone = fl_s.clone();
+                let p_clone = path.clone();
+                let cfg_clone = cfg_s.borrow().clone();
+                let ls_c = ls_s.clone();
+
+                fill_file_grid(&list_clone, &p_clone, &cfg_clone, ls_c);
             }
         }
-    }); // Одна закрывающая скобка для всего блока
+    });
 
     
     let fl_f = file_list.clone(); let cd_f = current_dir.clone(); let cfg_f = current_config.clone(); let sl_f = status_label.clone(); let ls_f = last_selected.clone();
     file_list.connect_row_activated(move |_, row| {
-        let rb = row.child().unwrap().downcast::<Box>().unwrap();
-        let p_str = rb.widget_name().to_string();
-        let path = PathBuf::from(&p_str);
-        *ls_f.borrow_mut() = p_str.clone();
-        if path.is_dir() {
-            *cd_f.borrow_mut() = path.clone();
-            sl_f.set_label(&path.to_string_lossy());
-            fill_file_list(&fl_f, &path, &cfg_f.borrow());
-        } else {
-            let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
-            if let Some(app_id) = cfg_f.borrow().associations.get(&ext) {
-                if let Some(app) = gio::AppInfo::all().into_iter().find(|a| a.id().map(|id| id == *app_id).unwrap_or(false)) {
-                    let _ = app.launch(&[gio::File::for_path(&path)], None::<&gio::AppLaunchContext>);
-                    return;
-                }
-            }
-            let _ = gio::AppInfo::launch_default_for_uri(&format!("file://{}", path.display()), None::<&gio::AppLaunchContext>);
-        }
-    });
+    
+    let rb = row.child().unwrap().downcast::<gtk::Box>().expect("Ожидался GtkBox"); 
+    
+    let p_str = rb.widget_name().to_string();
+    let path = PathBuf::from(&p_str);
+    *ls_f.borrow_mut() = p_str.clone();
 
-    let fl_u = file_list.clone(); let cd_u = current_dir.clone(); let cfg_u = current_config.clone(); let sl_u = status_label.clone();
-    up_btn.connect_clicked(move |_| {
-    // 1. Достаем путь из базы
-    let target_path: Option<String> = if let Some(mutex) = pinnacle_fm::DB_GLOBAL.get() {
-        // Указываем тип переменной db явно, чтобы убрать ошибку типизации
-        if let Ok(db) = mutex.lock() {
-            let db: &pinnacle_fm::DbEngine = &*db; 
-            let stmt = db.conn.prepare("SELECT path FROM history ORDER BY id DESC LIMIT 1 OFFSET 1").ok();
-            stmt.and_then(|mut s| {
-                s.query_row([], |row: &rusqlite::Row| row.get::<usize, String>(0)).ok()
-            })
-        } else { None }
-    } else { None };
-
-    // 2. Если нашли путь — обновляем всё остальное
-    if let Some(path_str) = target_path {
-        let p_buf = std::path::PathBuf::from(&path_str);
-
-        // Обновляем текущую директорию (RefCell)
-        {
-            let mut current_dir = cd_u.borrow_mut();
-            *current_dir = p_buf.clone();
-        }
-
-        sl_u.set_label(&path_str);
-
-        {
-            let cfg = cfg_u.borrow();
-            fill_file_list(&fl_u, &p_buf, &cfg);
-        }
-
-        // 3. Удаляем последнюю запись из базы (чистим историю "вперед")
-        if let Some(mutex) = pinnacle_fm::DB_GLOBAL.get() {
-            if let Ok(db) = mutex.lock() {
-                let _ = db.conn.execute("DELETE FROM history WHERE id = (SELECT MAX(id) FROM history)", []);
-            }
-        }
+    if path.is_dir() {
+        *cd_f.borrow_mut() = path.clone();
+        sl_f.set_label(&path.to_string_lossy());
+        fill_file_list(&fl_f, &path, &cfg_f.borrow());
+    } else {
+        
+        let _ = gio::AppInfo::launch_default_for_uri(
+            &format!("file://{}", path.display()), 
+            None::<&gio::AppLaunchContext>
+        );
     }
 });
 
+    
+    let _fl_u = file_list.clone(); let _cd_u = current_dir.clone(); let _cfg_u = current_config.clone(); let sl_u = status_label.clone();
+    let fl_u = file_list.clone(); 
+    let cd_u = current_dir.clone(); 
+    let cfg_u = current_config.clone(); 
+    let ls_u = last_selected.clone(); // ДОБАВИЛИ КЛОН ДЛЯ СЕТКИ
+    up_btn.connect_clicked(move |_| {
+    let mut target_path: Option<String> = None;
+
+    if let Some(mutex) = pinnacle_fm::DB_GLOBAL.get() {
+        if let Ok(mut db_lock) = mutex.lock() {
+            let db = &mut *db_lock; 
+            
+            // 1. Сначала находим ПРЕДЫДУЩИЙ путь (OFFSET 1)
+            let query = "SELECT path FROM history ORDER BY id DESC LIMIT 1 OFFSET 1";
+            if let Ok(path) = db.conn.query_row(query, [], |row| row.get::<_, String>(0)) {
+                target_path = Some(path);
+                
+                // 2. УДАЛЯЕМ текущий (последний) путь, чтобы "Назад" действительно сдвинуло историю
+                let _ = db.conn.execute("DELETE FROM history WHERE id = (SELECT max(id) FROM history)", []);
+            }
+        }
+    }
+
+    // 3. Если путь найден, отрисовываем СЕТКУ
+    if let Some(path_str) = target_path {
+        let pb = PathBuf::from(&path_str);
+        *cd_u.borrow_mut() = pb.clone(); // Обновляем текущий путь в памяти
+        
+        // Вызываем отрисовку СЕТКИ (всегда по умолчанию)
+        fill_file_grid(&fl_u, &pb, &cfg_u.borrow(), ls_u.clone());
+        
+        // Обновляем статусную строку (если есть sl_u)
+        sl_u.set_label(&format!("Переход в: {}", path_str));
+    }
+});
 
     let win_af = window.clone(); let cd_af = current_dir.clone(); let fl_af = file_list.clone(); let cfg_af = current_config.clone();
     add_file_btn.connect_clicked(move |_| { show_create_dialog(&win_af, cd_af.borrow().clone(), false, fl_af.clone(), cfg_af.borrow().clone()); });
@@ -642,21 +1084,26 @@ fn build_ui(app: &Application) {
     });
     window.add_action(&copy_act);
 
-    let ls_d = last_selected.clone(); let rev_d = revealer.clone(); let tl_d = toast_label.clone();
-    let fl_d = file_list.clone(); let cd_d = current_dir.clone(); let cfg_d = current_config.clone();
+       let ls_d = last_selected.clone(); let rev_d = revealer.clone(); let tl_d = toast_label.clone();
+    let _fl_d = file_list.clone(); let _cd_d = current_dir.clone(); let _cfg_d = current_config.clone();
     let del_act = gio::SimpleAction::new("delete-file", None);
+    
     del_act.connect_activate(move |_, _| {
         let p = ls_d.borrow().clone();
         if !p.is_empty() {
             if fs::remove_file(&p).is_ok() || fs::remove_dir_all(&p).is_ok() {
                 show_toast(&rev_d, &tl_d, "Удалено", false);
-                fill_file_list(&fl_d, &cd_d.borrow(), &cfg_d.borrow());
+                
+               
+      fill_file_grid(&file_list, &current_dir.borrow(), &current_config.borrow(), last_selected.clone());
+
             }
         }
     });
     window.add_action(&del_act);
+   
 
-    window.present();
+window.present();
     
     let _ = std::process::Command::new("pinnacle_preview_sql")
         .spawn();     
