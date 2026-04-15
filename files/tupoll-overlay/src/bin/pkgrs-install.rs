@@ -402,6 +402,9 @@ path = "src/bin/chown_pkgrs.rs"
 name = "writer-git-windows"
 path = "src/bin/writer-git-windows.rs"
 
+[[bin]]
+name = "helper-cargo-search"
+path = "src/bin/helper-cargo-search.rs"	 
 
 [profile.dev]
 opt-level = 3
