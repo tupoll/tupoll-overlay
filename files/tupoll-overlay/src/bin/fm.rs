@@ -92,7 +92,7 @@ debug = false
 incremental = true
  "#),
 
-("gui-apps/pinnacle-fm/files/pinnacle-fm/src/icon.rs", r#" use std::path::Path;
+("gui-apps/pinnacle-fm/files/pinnacle-fm/src/icon.rs", r##" use std::path::Path;
 use std::process::Command;
 use std::fs;
 use gtk4 as gtk; // Убедитесь, что используете gtk4
@@ -206,7 +206,7 @@ pub fn get_media_thumbnail(path: &Path) -> Option<String> {
         .status();
 
     if status.map_or(false, |s| s.success()) { Some(thumb_path) } else { None }
-} "#),
+} "##),
 		
     ("gui-apps/pinnacle-fm/files/pinnacle-fm/pinnacle-fm.desktop", r#"[Desktop Entry]
 Name=Pinnacle FM
