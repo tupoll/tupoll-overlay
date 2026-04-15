@@ -1431,86 +1431,92 @@ fn main() -> std::io::Result<()> {
              emerge-update: обновление cargo мира
              и так далее....");
 } "#),
-    ("sys-apps/pkgrs/files/src/bin/emerge-update.rs", r#"use std::{fs, io::{self, Write}, process::Command};
+    ("sys-apps/pkgrs/files/src/bin/emerge-update.rs", r#"use std::{fs, io::{self, BufRead, Write}, process::Command, path::Path};
 use colored::*;
 use semver::Version;
-
 const OVERLAY_PATH: &str = "/var/db/repos/tupoll-overlay/dev-rust";
+const CACHE_FILE_PATH: &str = "/var/cache/portage/pkgrs_cargo_update";
+
+fn get_ebuild_comment(pkg_path: &Path) -> String {
+if let Ok(entries) = fs::read_dir(pkg_path) {
+let mut ebuilds: Vec<_> = entries.filter_map(|e| e.ok()).map(|e| e.path())
+.filter(|p| p.extension().map_or(false, |ext| ext == "ebuild")).collect();
+ebuilds.sort();
+if let Some(last_ebuild) = ebuilds.last() {
+if let Ok(file) = fs::File::open(last_ebuild) {
+let mut reader = io::BufReader::new(file);
+let mut first_line = String::new();
+if reader.read_line(&mut first_line).is_ok() {
+let trimmed = first_line.trim();
+if trimmed.starts_with('#') { return trimmed[1..].trim().to_string(); }
+}
+}
+}
+}
+"".to_string()
+}
 
 fn get_cache_version(name: &str) -> Option<String> {
-    let output = Command::new("portageq")
-        .args(["best_visible", "/", &format!("dev-rust/{}", name)])
-        .output()
-        .ok()?;
 
-    let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
-    if stdout.is_empty() { return None; }
-    // Извлекаем чистую версию из атома dev-rust/pkg-1.2.3
-    Some(stdout.replace(&format!("dev-rust/{}-", name), ""))
+let output = Command::new("portageq").args(["best_visible", "/", &format!("dev-rust/{}", name)]).output().ok()?;
+let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+if stdout.is_empty() { return None; }
+Some(stdout.replace(&format!("dev-rust/{}-", name), ""))
 }
 
 fn main() -> io::Result<()> {
-    println!("\n{}", "=== [ Gentoo Rust Local Controller ] ===".bold().cyan());
-    println!("{} Сервис rust-portage-watcher активен. Работаем с кэшем.\n", ">>>".green());
+let mut log_file = fs::File::create(CACHE_FILE_PATH)?;
+println!("\n{}\n", "=== [ Gentoo Rust Local Controller ] ===".bold().cyan());
 
-    // Собираем в вектор, чтобы избежать ошибки "use of moved value"
-    let entries: Vec<_> = fs::read_dir(OVERLAY_PATH)?
-        .filter_map(|e| e.ok())
-        .collect();
+let mut entries: Vec<_> = fs::read_dir(OVERLAY_PATH)?.filter_map(|e| e.ok()).collect();
+entries.sort_by_key(|e| e.file_name());
 
-    for pkg in entries {
-        if !pkg.file_type()?.is_dir() { continue; }
-        let name = pkg.file_name().into_string().unwrap();
+for pkg in entries {
+    if !pkg.file_type()?.is_dir() { continue; }
+    let name = pkg.file_name().into_string().unwrap();
+    let pkg_path = pkg.path();
 
-        // 1. Читаем текущую версию из ebuild
-        let mut ebuilds: Vec<String> = fs::read_dir(pkg.path())?
-            .filter_map(|e| e.ok())
-            .map(|e| e.file_name().to_string_lossy().into_owned())
-            .filter(|n| n.ends_with(".ebuild"))
-            .collect();
+    let mut ebuilds: Vec<String> = fs::read_dir(&pkg_path)?.filter_map(|e| e.ok())
+        .map(|e| e.file_name().to_string_lossy().into_owned())
+        .filter(|n| n.ends_with(".ebuild")).collect();
 
-        if ebuilds.is_empty() { continue; }
-        ebuilds.sort();
-        let last_ebuild = ebuilds.last().unwrap();
-        let current_v = last_ebuild.replace(".ebuild", "").replace(&format!("{}-", name), "");
+    if ebuilds.is_empty() { continue; }
+    ebuilds.sort();
+    let last_ebuild = ebuilds.last().unwrap();
+    let current_v = last_ebuild.replace(".ebuild", "").replace(&format!("{}-", name), "");
+    let comment = get_ebuild_comment(&pkg_path);
 
-        print!("* {:<25} [ {} ] ", name.cyan(), current_v.white());
-        io::stdout().flush()?;
-
-        // 2. Логика для LIVE (9999)
-        if current_v == "9999" {
-            println!("{}", "-> LIVE".green());
-            continue; 
-        }
-
-        // 3. Сравнение с кэшем
-        if let Some(cache_v) = get_cache_version(&name) {
-            let v_local = Version::parse(&current_v).unwrap_or(Version::parse("0.0.0").unwrap());
-            let v_cache = Version::parse(&cache_v).unwrap_or(Version::parse("0.0.0").unwrap());
-
-            if v_cache > v_local {
-                println!("-> {} {}", "НОВАЯ:".yellow().bold(), cache_v.yellow());
-                print!("  Обновить ebuild? [y/N]: ");
-                io::stdout().flush()?;
-
-                let mut input = String::new();
-                io::stdin().read_line(&mut input)?;
-
-                if input.trim().to_lowercase() == "y" {
-                    let is_lib = name.contains("-rs") || name.contains("-sys") || name.contains("wayland") || name == "gbm";
-                    let tool = if is_lib { "emerge-setup-lib" } else { "emerge-setup-bin" };
-                    
-                    println!("{} Запуск {} v{}...", ">>>".green(), tool, cache_v);
-                    Command::new(tool).args([&name, &cache_v]).status()?;
-                }
-            } else {
-                println!("{}", "[OK]".blue());
-            }
+    let name_v_part = format!("* {:<25} [ {:<8} ] ", name, current_v);
+    let status_part = if current_v == "9999" {
+        print!("{}", name_v_part.cyan()); print!("{} ", format!("{:<20}", "-> LIVE").green());
+        format!("{:<20}", "-> LIVE")
+    } else if let Some(cache_v) = get_cache_version(&name) {
+        let v_local = Version::parse(&current_v).unwrap_or(Version::parse("0.0.0").unwrap());
+        let v_cache = Version::parse(&cache_v).unwrap_or(Version::parse("0.0.0").unwrap());
+        print!("{}", name_v_part.cyan());
+        if v_cache > v_local {
+            print!("{} ", format!("-> НОВАЯ: {}", cache_v).yellow().bold());
+            format!("{:<20}", format!("-> НОВАЯ: {}", cache_v))
         } else {
-            println!("{}", "[Нет в кэше]".red());
+            print!("{} ", "[OK]".blue()); format!("{:<20}", "[OK]")
         }
-    }
-    Ok(())
+    } else {
+        print!("{}", name_v_part.cyan()); print!("{} ", "[Нет в кэше]".red());
+        format!("{:<20}", "[Нет в кэше]")
+    };
+
+    println!("{}", comment.dimmed());
+    writeln!(log_file, "{}{} {}", name_v_part, status_part, comment)?;
+}
+
+println!("\n{} Запуск хелпера...", ">>>".green());
+     let _status = Command::new("fish")
+    .arg("-c")
+    .arg("helper-cargo-search")
+    .status();
+
+
+Ok(())
 }
  "#),
     ("sys-apps/pkgrs/files/src/bin/eselect-python.rs", r#"use std::env;
