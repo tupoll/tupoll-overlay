@@ -567,6 +567,78 @@ done
     //---------------------------------------------------
     //          PKGRS-BIN                                |
     //---------------------------------------------------
+
+("sys-apps/pkgrs/files/src/bin/helper-cargo-search.rs", r#"use std::{fs, io::{self, BufRead}, process::Command};
+use colored::*;
+use regex::Regex;
+use semver::Version;
+
+const CACHE_FILE_PATH: &str = "/var/cache/portage/pkgrs_cargo_update";
+const OVERLAY_BASE: &str = "/var/db/repos/tupoll-overlay/dev-rust";
+
+fn main() -> io::Result<()> {
+println!("\n{}", "=== [ Cargo Remote Searcher ] ===".bold().magenta());
+
+let file = fs::File::open(CACHE_FILE_PATH)?;
+let reader = io::BufReader::new(file);
+let re_cargo = Regex::new(r#"^(\S+)\s+=\s+"([^"]+)""#).unwrap();
+
+for line in reader.lines() {
+    let line = line?;
+    if !line.starts_with('*') || line.contains("-> LIVE") { continue; }
+
+    let parts: Vec<&str> = line.split_whitespace().collect();
+    if parts.len() < 4 { continue; }
+    
+    let pkg_name = parts[1];
+    let current_v_raw = parts[3]; 
+
+    let tool_label = parts.get(6).unwrap_or(&"").to_string();
+    if tool_label.is_empty() { continue; }
+
+    let output = Command::new("cargo")
+        .args(["search", pkg_name, "--limit", "1"])
+        .output()?;
+
+    if output.status.success() {
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        if let Some(caps) = re_cargo.captures(stdout.lines().next().unwrap_or("")) {
+            let remote_v_raw = &caps[2];
+            
+            let v_local = Version::parse(current_v_raw).unwrap_or(Version::parse("0.0.0").unwrap());
+            let v_remote = Version::parse(remote_v_raw).unwrap_or(Version::parse("0.0.0").unwrap());
+
+            if v_remote > v_local {
+                println!("\n{} Обновление {} [{} -> {}] через {}...", 
+                         ">>>".yellow(), pkg_name.cyan(), v_local, remote_v_raw.green(), tool_label.magenta());
+
+                let pkg_dir = format!("{}/{}", OVERLAY_BASE, pkg_name);
+                if fs::metadata(&pkg_dir).is_ok() {
+                    let _ = fs::remove_dir_all(&pkg_dir);
+                }
+
+                let status_write = Command::new(&tool_label)
+                    .args([pkg_name, remote_v_raw])
+                    .status()?;
+
+                if status_write.success() {
+    // Добавляем "=" в начало строки формата
+    let pkg_atom = format!("=dev-rust/{}-{}", pkg_name, remote_v_raw);
+    
+    println!("  {} Запуск установки: pkgrs -i {}", ">>>".blue(), pkg_atom);
+    
+    let _ = Command::new("pkgrs")
+        .args(["-i", &pkg_atom])
+        .status();
+}
+
+            }
+        }
+    }
+}
+Ok(())
+}
+  "#),
         ("sys-apps/pkgrs/files/src/bin/base.rs", r##"use std::env;
 use std::process::Command;
 use std::process::exit;
