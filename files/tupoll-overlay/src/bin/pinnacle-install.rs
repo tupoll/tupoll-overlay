@@ -16,7 +16,7 @@ EGIT_REPO_URI="https://github.com/pinnacle-comp/pinnacle"
 
 LICENSE="BSD-2"
 SLOT="0"
-KEYWORDS=""
+KEYWORDS="~amd64 ~arm64"
 PROPERTIES="live"
 
 RDEPEND="x11-libs/libxkbcommon
