@@ -66,7 +66,7 @@ DESCRIPTION="Pinnacle Wayland compositor for Gentoo"
 HOMEPAGE="https://github.com"
 LICENSE="MIT"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="~amd64 ~arm64"
 
 SRC_URI=""
 RESTRICT="fetch"
