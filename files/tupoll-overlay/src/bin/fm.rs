@@ -60,13 +60,13 @@ glib = "0.22"
 rusqlite = { version = "0.39", features = ["bundled"] }
 colored = "3.1"
 pango = "0.22.0"
+quick-xml = "0.39"
 
-# Это превращает src/lib.rs в библиотеку, которую можно импортировать
+
 [lib]
 name = "pinnacle_fm"
 path = "src/lib.rs"
 
-# Это превращает твой файл с интерфейсом в исполняемый бинарник
 [[bin]]
 name = "pinnacle-fm"
 path = "src/bin/pinnacle-fm.rs"
@@ -89,10 +89,10 @@ opt-level = 3
 lto = true
 panic = "abort"
 debug = false
-incremental = true
+incremental = true 
  "#),
 
-("gui-apps/pinnacle-fm/files/pinnacle-fm/src/icon.rs", r##" use std::path::Path;
+("gui-apps/pinnacle-fm/files/pinnacle-fm/src/icon.rs", r##"use std::path::Path;
 use std::process::Command;
 use std::fs;
 use gtk4 as gtk; // Убедитесь, что используете gtk4
@@ -206,7 +206,7 @@ pub fn get_media_thumbnail(path: &Path) -> Option<String> {
         .status();
 
     if status.map_or(false, |s| s.success()) { Some(thumb_path) } else { None }
-} "##),
+}  "##),
 		
     ("gui-apps/pinnacle-fm/files/pinnacle-fm/pinnacle-fm.desktop", r#"[Desktop Entry]
 Name=Pinnacle FM
@@ -218,7 +218,7 @@ Type=Application
 Categories=System;FileTools;FileManager;Utility;
 MimeType=inode/directory;
 StartupWMClass=io.github.pinnacle_fm "#),
-    ("gui-apps/pinnacle-fm/files/pinnacle-fm/src/bin/pinnacle-fm.rs", r#"use gtk4 as gtk;
+    ("gui-apps/pinnacle-fm/files/pinnacle-fm/src/bin/pinnacle-fm.rs", r##"use gtk4 as gtk;
 use gtk::prelude::*;
 use gtk::{
     gio, glib, Application, ApplicationWindow, Box, Label, Orientation, 
@@ -739,18 +739,42 @@ fn build_ui(app: &Application) {
     // Достаем текущего пользователя для USB
     let user = std::env::var("USER").unwrap_or_else(|_| "default".to_string());
     
-    let places = [
-    ("\u{f015}  Домой", home.clone()), 
-    ("\u{f019}  Загрузки", format!("{}/Downloads", home)), 
-    ("\u{f15c}  Документы", format!("{}/Documents", home)), 
-    ("\u{f001}  Музыка", format!("{}/Музыка", home)), 
-    ("\u{f1c5}  Изображения", format!("{}/Изображения", home)), 
-    ("---", String::new()), 
-    ("\u{f17c}  Система", "/".to_string()), 
-    ("---", String::new()), 
-    ("\u{f0a0}  USB", format!("/run/media/{}/", user)) 
-];
+    let gold_sand = "#BAA67F";   
+let deep_blue = "#001B44";   
+let light_gray = "#D3D3D3";  
+let gentoo_violet = "#AD8FD1"; 
 
+let places: Vec<(String, String)> = vec![
+    (format!("<span foreground='{gold_sand}'>\u{f015}  Домой</span>"), home.clone()), 
+    (format!("<span foreground='{gold_sand}'>\u{f019}  Загрузки</span>"), format!("{}/Downloads", home)), 
+    (format!("<span foreground='{gold_sand}'>\u{f15c}  Документы</span>"), format!("{}/Documents", home)), 
+    (format!("<span foreground='{gold_sand}'>\u{f001}  Музыка</span>"), format!("{}/Музыка", home)), 
+    (format!("<span foreground='{gold_sand}'>\u{f1c5}  Изображения</span>"), format!("{}/Изображения", home)), 
+    
+    ("---".into(), String::new()), 
+    (format!("<span foreground='{gold_sand}'>\u{f013}  Конфиги</span>"), format!("{}/.config", home)), 
+    (format!("<span foreground='{gold_sand}'>   \u{f0ad}  Pinnacle</span>"), format!("{}/.config/pinnacle", home)),
+    
+    ("---".into(), String::new()),
+    (format!("<span foreground='{gentoo_violet}'>\u{f0d0}  PKGRS</span>"), format!("{}/pkgrs", home)),
+    (format!("<span foreground='{gentoo_violet}'>   \u{f121}  Ebuilds</span>"), "/var/db/repos/tupoll-overlay/dev-rust".to_string()),
+
+    ("---".into(), String::new()), 
+    (format!("<span foreground='{deep_blue}'>\u{f17c}  Система</span>"), "/".to_string()), 
+    ("---".into(), String::new()), 
+    (format!("<span foreground='{light_gray}'>\u{f0a0}  USB</span>"), format!("/run/media/{}/", user)),
+    ("---".into(), String::new()), 
+    (format!("<span foreground='{deep_blue}'>\u{f17c}  Система</span>"), "/".to_string()), 
+    (format!("<span foreground='{deep_blue}'>   \u{f07b}  usr</span>"), "/usr".to_string()),
+    (format!("<span foreground='{deep_blue}'>   \u{f07b}  src</span>"), "/usr/src".to_string()),
+    (format!("<span foreground='{deep_blue}'>   \u{f07b}  local</span>"), "/usr/local".to_string()),
+    
+    ("---".into(), String::new()),
+    // Специфичный конфиг для твоего менеджера пакетов
+    (format!("<span foreground='{gentoo_violet}'>\u{f013}  etc/pkgrs</span>"), "/etc/pkgrs".to_string()),
+    ("---".into(), String::new()), 
+    (format!("<span foreground='{light_gray}'>\u{f0a0}  USB</span>"), format!("/run/media/{}/", user))  
+];
 
     for (name, path) in places {
         if name == "---" {
@@ -760,15 +784,17 @@ fn build_ui(app: &Application) {
             sep.set_margin_bottom(10);
             sep.set_opacity(0.3);
             sidebar_list.append(&sep);
-        } else {
+                } else {
             let lbl = Label::builder()
                 .label(name)
+                .use_markup(true) // ДОБАВЬ ЭТУ СТРОКУ, чтобы цвет заработал
                 .xalign(0.0)
-                .margin_start(12) // Отступ текста от левого края
+                .margin_start(12)
                 .build();
-            lbl.set_widget_name(&path);
+            lbl.set_widget_name(&path); // Убрали &, так как path теперь String
             sidebar_list.append(&lbl);
         }
+
     }
     sidebar_scroll.set_child(Some(&sidebar_list));
 
@@ -784,8 +810,7 @@ fn build_ui(app: &Application) {
     let status_label = Label::builder().label("Готов").hexpand(true).xalign(0.0).margin_start(10).build();
     let menu_button = MenuButton::builder().icon_name("view-more-symbolic").build();
     
-   // Найди создание списка
-   // Возвращаем как было
+  
     let file_list = ListBox::builder()
     .selection_mode(gtk::SelectionMode::Single)
     .build();
@@ -804,7 +829,6 @@ fn build_ui(app: &Application) {
     let add_dir_btn = Button::builder().icon_name("folder-new-symbolic").build();
 
     // 1. Создаем кнопку "Вид"
-   // Там, где создаете view_btn:
     let view_btn = Button::builder()
     .icon_name("view-list-bullet-symbolic") // Показываем иконку списка, так как мы УЖЕ в сетке
     .build();
@@ -1108,7 +1132,8 @@ window.present();
     let _ = std::process::Command::new("pinnacle_preview_sql")
         .spawn();     
 }
- "#),
+
+ "##),
      ("gui-apps/pinnacle-fm/files/pinnacle-fm/src/bin/pinnacle_preview_sql.rs", r#"use gtk4 as gtk;
 use gtk::prelude::*;
 use gtk::{gio, glib, gdk, Application, Box, Image, Label, Orientation, Window};
@@ -1336,11 +1361,13 @@ fn main() {
        ("gui-apps/pinnacle-fm/files/pinnacle-fm/src/lib.rs", r#"use gtk4 as gtk;
 use gtk::gio;
 use gtk::prelude::*;
-use rusqlite::{Connection, Result as SqlResult};
+use rusqlite::Connection;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Mutex, OnceLock};
+use quick_xml::reader::Reader;
+use quick_xml::events::Event;
 
 // Дальше идет РАЗДЕЛ 1...
 
@@ -1460,7 +1487,25 @@ impl FileMenu {
             let _ = if p_del.is_dir() { fs::remove_dir_all(&p_del) } else { fs::remove_file(&p_del) };
             println!(">>> Удалено: {:?}", p_del);
         });
+         // --- ЛОГИКА: CUSTOM ACTIONS (Загрузка из XML) ---
+        let uca_list = load_uca_actions();
+        for (i, uca) in uca_list.into_iter().enumerate() {
+            let action_id = format!("uca_{}", i);
+            menu_model.append(Some(&uca.name), Some(&format!("menu.{}", action_id)));
 
+            let cmd_template = uca.command.clone();
+            let file_p = src_path.clone(); // Путь к текущему файлу для %f
+            
+            let uca_act = gio::SimpleAction::new(&action_id, None);
+            uca_act.connect_activate(move |_, _| {
+                // Безопасное экранирование пути для шелла
+                let escaped = format!("'{}'", file_p.replace("'", "'\\''"));
+                let final_cmd = cmd_template.replace("%f", &escaped);
+                
+                let _ = Command::new("sh").arg("-c").arg(final_cmd).spawn();
+            });
+            action_group.add_action(&uca_act);
+        }
         action_group.add_action(&copy_act);
         action_group.add_action(&paste_act);
         action_group.add_action(&del_act);
@@ -1474,6 +1519,56 @@ impl FileMenu {
 // =========================================================================
 pub fn get_file_type(path: &Path) -> String {
     if path.is_dir() { "Папка".to_string() } else { "Файл".to_string() }
+}
+// =========================================================================
+// РАЗДЕЛ 5: CUSTOM ACTIONS (UCA XML Parser)
+// =========================================================================
+      pub struct UcaAction { pub name: String, pub command: String }
+
+pub fn load_uca_actions() -> Vec<UcaAction> {
+    let home = std::env::var("HOME").unwrap_or_default();
+    let path = format!("{}/.config/pinnacle-fm/uca.xml", home);
+
+    let mut reader = match Reader::from_file(&path) {
+        Ok(r) => r,
+        Err(_) => return Vec::new(),
+    };
+
+    let (mut actions, mut c_name, mut c_cmd, mut tag, mut buf) = 
+        (Vec::new(), String::new(), String::new(), String::new(), Vec::new());
+
+    loop {
+        match reader.read_event_into(&mut buf) {
+            Ok(Event::Start(e)) => {
+                tag = String::from_utf8_lossy(e.local_name().as_ref()).to_string();
+            }
+                      Ok(Event::Text(e)) => {
+                // Прямое чтение байтов — работает всегда и во всех версиях 0.3x
+                let text = String::from_utf8_lossy(e.as_ref()).trim().to_string();
+                
+                if !text.is_empty() {
+                    if tag == "name" { c_name = text; }
+                    else if tag == "command" { c_cmd = text; }
+                }
+            }
+
+            Ok(Event::End(e)) if e.local_name().as_ref() == b"action" => {
+                if !c_name.is_empty() {
+                    actions.push(UcaAction { 
+                        name: c_name.clone(), 
+                        command: c_cmd.clone() 
+                    });
+                }
+                c_name.clear();
+                c_cmd.clear();
+                tag.clear();
+            }
+            Ok(Event::Eof) => break,
+            _ => (),
+        }
+        buf.clear();
+    }
+    actions
 }
 "#), ];
       
