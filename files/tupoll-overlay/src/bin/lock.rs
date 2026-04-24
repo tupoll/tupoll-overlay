@@ -47,8 +47,8 @@ src_install() {
 	cargo_src_install
 	exeinto /etc/pam.d
     doexe "pinnacle-lock"
-    mkdir -p /etc/kantata
-    exeinto /etc/kantata
+    mkdir -p /etc/kanata
+    exeinto /etc/kanata
     doexe "keymaps-lock.kbd"
     exeinto /usr/sbin
     doexe "kanata-daemon-lock.sh"
