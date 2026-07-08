@@ -253,11 +253,6 @@ path = "src/bin/dispatch_setup.rs"
 name = "writer-ws"
 path = "src/bin/writer-ws.rs"
 
-[[bin]]
-name = "test-ironbar"
-path = "src/bin/test_ironbar.rs"
-
-
 [profile.dev]
 opt-level = 3
 lto = true
