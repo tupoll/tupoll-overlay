@@ -1,0 +1,10 @@
+default_path = ""
+show_hidden = true
+show_size = false
+show_type = false
+show_time = false
+folders_first = false
+
+[associations]
+"" = "thunar-volman-settings.desktop"
+jpg = "org.gnome.gThumb.desktop"
