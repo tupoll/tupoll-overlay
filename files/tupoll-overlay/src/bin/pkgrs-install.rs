@@ -2083,7 +2083,7 @@ fn main() -> io::Result<()> {
 
     println!("\n{} Система под полным контролем pkg.", "Аминь!".green().bold());
     Ok(())
-}#"
+}
  "##),
     ("sys-apps/pkgrs/files/src/bin/emerge-cargo-base.rs", r##"use rusqlite::{params, Connection, Result};
 use std::env;
@@ -2194,8 +2194,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
  "##),
-    ("sys-apps/pkgrs/files/src/bin/emerge_rust_world.rs", r#"
- "#),
+    
     ("sys-apps/pkgrs/files/src/bin/emerge-setup-bin.rs", r##"use std::fs;
 use std::process::Command;
 use std::io::Write;
@@ -2303,7 +2302,7 @@ fn main() -> std::io::Result<()> {
 
     println!("{} Готово. pkgrs -l -av {}/{}", ">>>".green(), CATEGORY, name);
     Ok(())
-}#"
+}
  "##),
     ("sys-apps/pkgrs/files/src/bin/emerge-setup-git.rs", r##"use rusqlite::{params, Connection, Result};
 use std::env;
