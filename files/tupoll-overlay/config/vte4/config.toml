@@ -1,0 +1,10 @@
+font= "Hack Nerd Font 17"
+scrollbar = false
+no_decorations = false        # Убирает Titlebar (заголовок окна)
+transparent = 20             # Прозрачность фона (0-100)
+whole_window_transparent = true # Прозрачность всего окна целиком
+foreground = "#BFBFBF"       # Ядовито-зеленый текст
+background = "#050505"       # Почти черный фон
+cursor_shape = "ibeam"       # Курсор в виде палочки
+scrollback = 5000            # История строк
+use_theme_colors = false
