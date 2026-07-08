@@ -1,0 +1,27 @@
+.notification-popup {
+    background-color: #050a15;
+    border: 1px solid #BAA67F;
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow: inset 0 0 15px rgba(0, 85, 255, 0.1), 0 4px 15px rgba(0, 0, 0, 0.6);
+}
+.notification-summary {
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 11pt;
+}
+.notification-body {
+    font-family: "monospace";
+    color: #BAA67F;
+    font-size: 10pt;
+    padding-top: 4px;
+}
+.crab-anim {
+    font-size: 14pt;
+    color: #BAA67F;
+    text-shadow: 0 0 5px rgba(186, 166, 127, 0.4);
+}
+.notification-app-name {
+    font-size: 0;
+    opacity: 0;
+}
