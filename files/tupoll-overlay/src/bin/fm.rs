@@ -55,7 +55,6 @@ edition = "2024"
 
 [dependencies]
 gtk4 = "0.11"
-vte4 = "0.10"
 libc = "0.2.182"
 serde = { version = "1.0", features = ["derive"] }
 toml = "1.1"
