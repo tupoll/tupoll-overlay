@@ -1,0 +1,107 @@
+/* Главное окно приложения */
+window {
+    background-color: #1a1a1a;
+}
+
+/* Общие базовые стили для всех текстовых полей */
+textview {
+    font-family: "monospace";
+    font-size: 11pt;
+    background-color: #1e1e1e;
+    color: #BAA67F; /* Наш основной цвет текста */
+}
+
+/* Левая панель: Чат с ИИ */
+.chat-pane textview {
+    background-color: #1c1c1c;
+    color: #BAA67F;
+}
+
+/* Средняя панель: Код ответа ИИ */
+.code-pane textview {
+    background-color: #141414;
+    color: #BAA67F;
+}
+
+/* Нижняя панель: Редактор системных файлов */
+.file-pane textview {
+    background-color: #181818;
+    color: #BAA67F;
+}
+
+/* Кнопки управления */
+button {
+    background-image: none;
+    background-color: #2a2a2a;
+    color: #BAA67F; /* Цвет текста на кнопках */
+    border-radius: 4px;
+    border: 1px solid #3d3d3d;
+    padding: 4px 8px;
+}
+
+button:hover {
+    background-color: #353535;
+    border-color: #BAA67F; /* Подсветка рамки при наведении */
+}
+
+button:active {
+    background-color: #4a4a4a;
+}
+
+button:disabled {
+    background-color: #202020;
+    color: #555555; /* Приглушенный цвет для отключенной кнопки */
+    border-color: #2a2a2a;
+}
+
+/* Выпадающий список моделей */
+dropdown {
+    background-color: #2a2a2a;
+    color: #BAA67F;
+    border-radius: 4px;
+    border: 1px solid #3d3d3d;
+}
+
+/* Текстовое поле ввода команд */
+entry {
+    background-color: #222222;
+    color: #BAA67F;
+    border: 1px solid #3d3d3d;
+    border-radius: 4px;
+    padding: 6px;
+}
+
+entry:focus {
+    border-color: #BAA67F; /* Подсветка поля ввода при фокусе */
+}
+
+/* Метки статуса и заголовки */
+label {
+    color: #BAA67F;
+    font-size: 10pt;
+    opacity: 0.8; /* Чуть-чуть приглушим заголовки для контраста */
+}
+
+/* Теги подсветки синтаксиса Rust */
+.keyword-blue {
+    color: #569cd6; /* Красивый синий цвет для if, let, fn, match */
+    font-weight: bold;
+}
+
+.type-green {
+    color: #4ec9b0; /* Изумрудно-зеленый для String, Option, PathBuf, u32 */
+}
+
+.comment-gray {
+    color: #7f7f7f; /* Серый для комментариев // */
+    font-style: italic;
+}
+
+/* Панель номеров строк */
+.line-numbers textview {
+    background-color: #121212; /* Более темный фон для контраста */
+    color: #555555;            /* Приглушенный серый цвет для цифр */
+    text-align: right;
+    border-right: 1px solid #2d2d2d; /* Разделительная линия между цифрами и кодом */
+    padding-right: 5px;
+}
