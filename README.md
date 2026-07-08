@@ -51,6 +51,7 @@ gui-apps/pinnacle-lock ~amd64
 gui-apps/pinnacle-screenshot ~amd64
 gui-apps/pinnacle-fm ~amd64
 gui-apps/pinnacle-translator ~amd64
+gui-apps/crucian ~amd64
 ###For those who decide to use pkgrs:
 dev-rust/* ~amd64
 dev-rust/*-* ~amd64
@@ -133,8 +134,8 @@ System Binaries (/usr/bin)
 | **pinnacle-lock** | Screen lock |
 | **pinnacle-notify** | Service notifications |
 | **pinnacle-screenshot** | Screenshot program |
-| **pinnacle-fm** | File Viewer |
-
+| **pinnacle-fm** | File Manager |
+| **crucian** | Editor and AI assistant |
 To install a package from the rust repository:
 ```
 pkgrs -sc wayshot
