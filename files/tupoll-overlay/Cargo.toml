@@ -41,6 +41,10 @@ path = "src/bin/fm.rs"
 name = "pkgrs-install"
 path = "src/bin/pkgrs-install.rs"
 
+[[bin]]
+name = "crucian-config"
+path = "src/bin/crucian.rs"
+
 [profile.release]
 strip = true      
 lto = true        
