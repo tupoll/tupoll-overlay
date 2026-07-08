@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+    <action>
+        <name>💻 Терминал здесь</name>
+        <command>pinnacle-terminal --working-directory %f</command>
+    </action>
+    <action>
+         <name>🎼 В плейлист</name>
+    <command>echo %f >> ~/tmp/playlist</command>
+    </action>
+    <action>
+        <name>🛠 Собрать (pkgrs)</name>
+        <command>pinnacle-terminal -e sh -c "pkgrs -i %f; read"</command>
+    </action>
+</actions>
