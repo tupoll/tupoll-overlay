@@ -1,0 +1,21 @@
+ .error-note { 
+        background: #ff5555;
+        color: white; 
+        border-radius: 5px; 
+        padding: 4px; 
+        font-weight: bold; 
+        font-family: 'MesloLGSDZ Nerd Font';
+        font-size: 14px;
+    }
+    .success-note { 
+        background: #50fa7b; 
+        color: #282a36; 
+        border-radius: 5px; 
+        padding: 4px; 
+    }
+   
+    .file-card:hover .file-icon-nf {
+    color: #f9e2af; /* Цвет меняется при наведении на карточку */
+    transform: scale(1.2);
+    text-shadow: 0 0 10px rgba(249, 226, 175, 0.5); /* Легкое свечение */
+}
