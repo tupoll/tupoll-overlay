@@ -45,6 +45,10 @@ path = "src/bin/pkgrs-install.rs"
 name = "crucian-config"
 path = "src/bin/crucian.rs"
 
+[[bin]]
+name = "repoman-config"
+path = "src/bin/repoman.rs"
+
 [profile.release]
 strip = true      
 lto = true        
