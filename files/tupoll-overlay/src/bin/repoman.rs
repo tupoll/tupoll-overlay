@@ -45,7 +45,7 @@ src_install() {
 	     	
 }     
   "#), 
-      ("sys-apps/repoman-rs/files/repoman/Cargo.toml", r#"[package]
+      ("sys-apps/repoman-rs/files/repoman-rs/Cargo.toml", r#"[package]
 name = "repoman-rs"
 version = "0.1.0"
 edition = "2024"
