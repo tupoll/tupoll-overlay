@@ -1,0 +1,4 @@
+pkg_postinst() {
+    echo "!!! Удаление emerge из env-хука !!!"
+    rm -f "${ROOT}/usr/bin/emerge"
+}
