@@ -136,6 +136,8 @@ System Binaries (/usr/bin)
 | **pinnacle-screenshot** | Screenshot program |
 | **pinnacle-fm** | File Manager |
 | **crucian** | Editor and AI assistant |
+| **servo** | Rust web-brawser Servo |
+| **servomenu** | Servoshell menu GTk4 |
 To install a package from the rust repository:
 ```
 pkgrs -sc wayshot
