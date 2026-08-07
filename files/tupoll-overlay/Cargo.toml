@@ -1,6 +1,6 @@
 [package]
 name = "tupoll-overlay"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 
 [dependencies]
@@ -56,6 +56,14 @@ path = "src/bin/servo-install.rs"
 [[bin]]
 name = "pkgrs-utils-config"
 path = "src/bin/pkgrs-utils-config.rs"
+
+[[bin]]
+name = "tupoll-overlay-amd64"
+path = "src/bin/tupoll-overlay-amd64.rs"
+
+[[bin]]
+name = "tupoll-overlay-arm64"
+path = "src/bin/tupoll-overlay-arm64.rs"
 
 [profile.release]
 strip = true      
