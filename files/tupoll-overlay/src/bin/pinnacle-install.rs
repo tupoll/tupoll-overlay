@@ -496,27 +496,22 @@ fn get_cpu() -> (u64, u64) {
   "##),
   
      ("gui-wm/pinnacle-gentoo/files/pinnacle-gentoo/src/cpu_temp_oval.rs", r##"use std::fs;
-use std::path::Path;
 
 fn main() {
     // --- Настройки стиля ---
     const WIDTH: usize = 8;
     const FONT_SIZE: &str = "9pt";
-    const BARS: [&str; 8] = [" ", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
+    const BARS: [&str; 8] = ["░", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
 
-    // Символы скругления (Nerd Fonts)
     const LEFT_CAP: &str = "";
     const RIGHT_CAP: &str = "";
 
-    // Цветовая схема
     const COLOR_HOT: &str = "#FF4500";  // > 75°C
     const COLOR_MID: &str = "#FFFFFF";  // 45-75°C
     const COLOR_COLD: &str = "#00BFFF"; // < 45°C
 
-    // 1. Получение температуры
     let temp = get_cpu_temp();
 
-    // 2. Выбор цвета
     let color = if temp > 75 {
         COLOR_HOT
     } else if temp < 45 {
@@ -525,7 +520,6 @@ fn main() {
         COLOR_MID
     };
 
-    // 3. Форматирование метки (центрирование)
     let label = format!("{}°", temp);
     let mut label_padded = label.clone();
     while label_padded.chars().count() < 4 {
@@ -534,13 +528,11 @@ fn main() {
     let label_chars: Vec<char> = label_padded.chars().collect();
     let text_start = (WIDTH.saturating_sub(label_chars.len())) / 2;
 
-    // 4. Расчет индекса полоски (шкала 30°C - 90°C)
-    let factor = (temp as f32 - 30.0) / (90.0 - 30.0);
+    let factor = (temp as f32 - 20.0) / (80.0 - 20.0);
     let factor = factor.clamp(0.0, 1.0);
     let bar_idx = (factor * (BARS.len() - 1) as f32).round() as usize;
     let bar_char = BARS[bar_idx];
 
-    // 5. Сборка Pango-строки
     let mut output = format!("<span size='{}' color='{}' face='monospace'>{}", FONT_SIZE, color, LEFT_CAP);
 
     for i in 0..WIDTH {
@@ -558,18 +550,47 @@ fn main() {
 }
 
 fn get_cpu_temp() -> i32 {
-    // Список возможных путей к датчикам температуры
-    let zones = ["/sys/class/thermal/thermal_zone0/temp", "/sys/class/thermal/thermal_zone1/temp"];
+    // 1. ПЕРВЫЙ ПРИОРИТЕТ: Ищем родной coretemp (для ПК Intel), чтобы обойти мертвые зоны ACPI
+    if let Ok(entries) = fs::read_dir("/sys/class/hwmon") {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if let Ok(name) = fs::read_to_string(path.join("name")) {
+                if name.trim() == "coretemp" {
+                    let mut sum_temp = 0;
+                    let mut count = 0;
 
-    for zone in zones {
-        if let Ok(content) = fs::read_to_string(Path::new(zone)) {
-            if let Ok(temp_raw) = content.trim().parse::<i32>() {
-                return temp_raw / 1000; // Конвертация из миллиградусов
+                    for i in 1..9 {
+                        let temp_file = path.join(format!("temp{}_input", i));
+                        if let Ok(content) = fs::read_to_string(temp_file) {
+                            if let Ok(temp_raw) = content.trim().parse::<i32>() {
+                                let t = temp_raw / 1000;
+                                if t > 0 && t < 110 {
+                                    sum_temp += t;
+                                    count += 1;
+                                }
+                            }
+                        }
+                    }
+                    if count > 0 {
+                        return sum_temp / count; // Возвращаем реальную температуру Intel Core
+                    }
+                }
             }
         }
     }
-    0
-}      
+
+    // 2. ВТОРОЙ ПРИОРИТЕТ: Если coretemp нет, читаем thermal_zone0 (для Raspberry Pi)
+    if let Ok(content) = fs::read_to_string("/sys/class/thermal/thermal_zone0/temp") {
+        if let Ok(temp_raw) = content.trim().parse::<i32>() {
+            let t = temp_raw / 1000;
+            if t > 0 && t < 110 {
+                return t;
+            }
+        }
+    }
+
+    00 // Дефолт на крайний случай
+}
   "##),
   
         ("gui-wm/pinnacle-gentoo/files/pinnacle-gentoo/src/fish-conf.rs", r##"use std::env;
