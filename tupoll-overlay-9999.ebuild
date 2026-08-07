@@ -19,19 +19,18 @@ REQUIRED_USE="|| ( amd64 arm64 )"
 
 S="${WORKDIR}/${P}"
 
-RDEPEND="app-shells/fish,
-         dev-util/maturin,
-         dev-vcs/git,
+RDEPEND="app-shells/fish
+         dev-util/maturin
+         dev-vcs/git
          dev-db/sqlite"
          
 DEPEND="${RDEPEND}"
 BDEPEND="virtual/pkgconfig"
 
 src_unpack() {
-	git-r3_src_unpack
-	if [[ -d "${FILESDIR}/tupoll-overlay" ]]; then
-		cp -Rp "${FILESDIR}/tupoll-overlay/"* "${S}/" || die
-	fi
+    mkdir -p "${WORKDIR}/${P}" || die
+    cp -Rp "${FILESDIR}/tupoll-overlay" "${WORKDIR}/${P}/" || die
+    git-r3_src_unpack
 	cargo_live_src_unpack
 }
 
@@ -40,23 +39,15 @@ src_configure() {
 }
 
 src_compile() {
-	RUSTFLAGS="-C target-cpu=native" cargo_src_compile
+	cargo_src_compile
 }
 
 src_install() {
-	# Устанавливаем корневой оркестратор
-	dobin "target/release/tupoll-overlay"
-	
-	# Безусловно закидываем оба архитектурных профиля, чтобы они были доступны tupoll-overlay
-	dobin "target/release/tupoll-overlay-amd64"
-	if use arm64; then
-		dobin "target/release/tupoll-overlay-arm64"
-	fi
-
+	cargo_src_install
 	insinto /usr/share/pinnacle-gentoo/pictures
-	doins pictures/*
-	doicon "accessories-dictionary.svg"
-	domenu "Pinnacle Translator.desktop" 
+    doins pictures/*
+    doicon "accessories-dictionary.svg"
+    domenu "Pinnacle Translator.desktop" 
 }  
 
 pkg_postinst() {
