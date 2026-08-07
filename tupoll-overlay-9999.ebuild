@@ -5,25 +5,20 @@ EAPI=8
 
 inherit cargo git-r3 desktop
 
-DESCRIPTION="Monolithic bootstrap with collaborative amd64/arm64 execution engine"
-HOMEPAGE="https://github.com/tupoll/tupoll-overlay"
+DESCRIPTION="Local overlay for Gentoo linux."
+
+HOMEPAGE="https://github.com"
 EGIT_REPO_URI="https://github.com/tupoll/tupoll-overlay.git"
 
 LICENSE="BSD-2"
 SLOT="0"
-
-# ДВА СИСТЕМНЫХ ФЛАГА АРХИТЕКТУРЫ
 KEYWORDS="~amd64 ~arm64"
 IUSE="amd64 arm64"
 REQUIRED_USE="|| ( amd64 arm64 )"
 
-S="${WORKDIR}/${P}"
+S="${WORKDIR}/${P}/tupoll-overlay"
 
-RDEPEND="app-shells/fish
-         dev-util/maturin
-         dev-vcs/git
-         dev-db/sqlite"
-         
+RDEPEND=" "
 DEPEND="${RDEPEND}"
 BDEPEND="virtual/pkgconfig"
 
@@ -51,17 +46,7 @@ src_install() {
 }  
 
 pkg_postinst() {
-	einfo "Запуск совместного конвейера развертывания оверлея Pinnacle OS..."
-	
-	# Единая точка входа: вызывается строго tupoll-overlay, который внутри себя
-	# координирует работу с -amd64 / -arm64 и дописывает директории!
-	if [[ -x "/usr/bin/tupoll-overlay" ]]; then
-		/usr/bin/tupoll-overlay
-	fi
-
-	# === ХУК: ОКОНЧАТЕЛЬНЫЙ ДЕМОНТАЖ EMERGE ===
-	echo "!!!  Удаление emerge из env-хука !!!"
-	rm -f "${ROOT}/usr/bin/emerge"
-	
-	elog "Оверлей успешно развернут под архитектуру ${ARCH}. Менеджер пакетов переключен на pkgrs 🗑"
+	 fish -c /usr/bin/tupoll-overlay
+	 
+     elog "Всё почищено 🗑"
 }
