@@ -1,5 +1,10 @@
 # tupoll-overlay
-
+Some basic portage elements have been replaced with rust analogues, which is significant
+increased speed and productivity. Using pkgrs 
+merged the cargo and portage repositories - this makes it cleaner 
+graphics stack. Only smithay composer is used. Entire environment
+depends on each other. Most programs cannot be installed without rust crates
+(servo browser,wayshot...).
 The overlay is added with a simple Rust installation script and is ready to use. 
 Add your ebuilds to it; it's local.
 
