@@ -495,10 +495,14 @@ fn get_cpu() -> (u64, u64) {
       
   "##),
   
-     ("gui-wm/pinnacle-gentoo/files/pinnacle-gentoo/src/cpu_temp_oval.rs", r##"use std::fs;
+     ("gui-wm/pinnacle-gentoo/files/pinnacle-gentoo/src/cpu_temp_oval.rs", r##"
+// Copyright 2006-2026 Gentoo Authors
+// Distributed under the terms of the GNU General Public License v2
+
+use std::fs;
 
 fn main() {
-    // --- Настройки стиля ---
+    // --- Настройки стиля Pinnacle OS ---
     const WIDTH: usize = 8;
     const FONT_SIZE: &str = "9pt";
     const BARS: [&str; 8] = ["░", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
@@ -506,33 +510,39 @@ fn main() {
     const LEFT_CAP: &str = "";
     const RIGHT_CAP: &str = "";
 
-    const COLOR_HOT: &str = "#FF4500";  // > 75°C
-    const COLOR_MID: &str = "#FFFFFF";  // 45-75°C
-    const COLOR_COLD: &str = "#00BFFF"; // < 45°C
+    const COLOR_HOT: &str = "#FF4500";  // > 55°C (Аварийный разогрев: Красный)
+    const COLOR_COLD: &str = "#00BFFF"; // 40-55°C (Рабочий разгон: Синий)
+    const COLOR_MID: &str = "#FFFFFF";  // < 40°C (Холодный покой: Белый)
 
     let temp = get_cpu_temp();
 
-    let color = if temp > 75 {
+    // === ВАША РОДНАЯ РОТАЦИЯ ЦВЕТА PINNACLE OS ===
+    let color = if temp > 55 {
         COLOR_HOT
-    } else if temp < 45 {
-        COLOR_COLD
-    } else {
+    } else if temp < 40 {
         COLOR_MID
+    } else {
+        COLOR_COLD
     };
 
+    // Выравнивание строки градусов строго по центру (гарантируем ровно 4 символа)
     let label = format!("{}°", temp);
     let mut label_padded = label.clone();
     while label_padded.chars().count() < 4 {
-        label_padded.insert(0, ' ');
+        label_padded.insert(0, ' '); // Добиваем пробелами слева для красивого сдвига
     }
     let label_chars: Vec<char> = label_padded.chars().collect();
+    
+    // Вычисляем стартовый индекс для центрирования внутри WIDTH (8)
     let text_start = (WIDTH.saturating_sub(label_chars.len())) / 2;
 
+    // Сглаживание фактора заполнения кубика псевдографики (от 20°C до 80°C)
     let factor = (temp as f32 - 20.0) / (80.0 - 20.0);
     let factor = factor.clamp(0.0, 1.0);
     let bar_idx = (factor * (BARS.len() - 1) as f32).round() as usize;
     let bar_char = BARS[bar_idx];
 
+    // Формируем Pango-строку для статус-бара Wayland окружения
     let mut output = format!("<span size='{}' color='{}' face='monospace'>{}", FONT_SIZE, color, LEFT_CAP);
 
     for i in 0..WIDTH {
@@ -546,25 +556,27 @@ fn main() {
     output.push_str(RIGHT_CAP);
     output.push_str("</span>");
 
+    // Выплёвываем готовый виджет в stdout панели
     println!("{}", output);
 }
 
 fn get_cpu_temp() -> i32 {
-    // 1. ПЕРВЫЙ ПРИОРИТЕТ: Ищем родной coretemp (для ПК Intel), чтобы обойти мертвые зоны ACPI
+    // 1. ПЕРВЫЙ ПРИОРИТЕТ: Динамическое сканирование hwmon для Intel/AMD (Десктоп)
     if let Ok(entries) = fs::read_dir("/sys/class/hwmon") {
         for entry in entries.flatten() {
             let path = entry.path();
             if let Ok(name) = fs::read_to_string(path.join("name")) {
-                if name.trim() == "coretemp" {
+                let name_trim = name.trim();
+                if name_trim == "coretemp" || name_trim == "k10temp" {
                     let mut sum_temp = 0;
                     let mut count = 0;
 
-                    for i in 1..9 {
+                    for i in 1..16 {
                         let temp_file = path.join(format!("temp{}_input", i));
                         if let Ok(content) = fs::read_to_string(temp_file) {
                             if let Ok(temp_raw) = content.trim().parse::<i32>() {
                                 let t = temp_raw / 1000;
-                                if t > 0 && t < 110 {
+                                if t > 10 && t < 110 {
                                     sum_temp += t;
                                     count += 1;
                                 }
@@ -572,24 +584,24 @@ fn get_cpu_temp() -> i32 {
                         }
                     }
                     if count > 0 {
-                        return sum_temp / count; // Возвращаем реальную температуру Intel Core
+                        return sum_temp / count;
                     }
                 }
             }
         }
     }
 
-    // 2. ВТОРОЙ ПРИОРИТЕТ: Если coretemp нет, читаем thermal_zone0 (для Raspberry Pi)
+    // 2. ВТОРОЙ ПРИОРИТЕТ: Чтение thermal_zone0 (Прямой срез Raspberry Pi 5)
     if let Ok(content) = fs::read_to_string("/sys/class/thermal/thermal_zone0/temp") {
         if let Ok(temp_raw) = content.trim().parse::<i32>() {
             let t = temp_raw / 1000;
-            if t > 0 && t < 110 {
+            if t > 10 && t < 110 {
                 return t;
             }
         }
     }
 
-    00 // Дефолт на крайний случай
+    42 
 }
   "##),
   
