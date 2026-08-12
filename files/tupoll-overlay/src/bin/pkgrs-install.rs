@@ -5,10 +5,7 @@ fn main() -> std::io::Result<()> {
     let base_path = Path::new("/var/db/repos/tupoll-overlay/");   
     let text_files = [
     
-    ("sys-apps/pkgrs/files/src/bin/inspector-rs.rs", r#"// Copyright 2006-2026 Gentoo Authors
-// Distributed under the terms of the GNU General Public License v2
-
-use std::env;
+    ("sys-apps/pkgrs/files/src/bin/inspector-rs.rs", r#"use std::env;
 use std::fs;
 use std::io::{self, Write};
 use std::process::{Command, exit};
@@ -18,42 +15,85 @@ use colored::*;
 const OVERLAY_ROOT: &str = "/var/db/repos/tupoll-overlay";
 const CATEGORY: &str = "dev-rust";
 
-// Добавляем эту строчку, чтобы компилятор не ругался на неиспользуемые варианты:
-#[allow(dead_code)]
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 enum PackageType {
     Binary,
     Library,
     Workspace,
     Font,
-    Empty, // Теперь варнинга не будет
 }
 
-
-fn parse_manifest_type(toml_content: &str) -> PackageType {
-    let has_bin = toml_content.contains("[[bin]]") || toml_content.contains("[bin]");
-    let has_lib = toml_content.contains("[lib]") || toml_content.contains("[[lib]]") || toml_content.contains("crate-type");
-    
-    match (has_bin, has_lib) {
-        (true, false) => PackageType::Binary,
-        (false, true) => PackageType::Library,
-        (true, true)  => PackageType::Workspace,
-        (false, false) => PackageType::Library,
+fn check_package_type(name: &str, description: &str, version: &str) -> PackageType {
+    if name.contains("-fonts") || name.contains("-font") {
+        return PackageType::Font;
     }
+
+    // Попытка прочесть локальный кэш реального пользователя (даже под sudo)
+    let home = env::var("SUDO_HOME")
+        .or_else(|_| env::var("HOME"))
+        .unwrap_or_default();
+    
+    let registry_src = Path::new(&home).join(".cargo/registry/src");
+    
+    if registry_src.exists() {
+        if let Ok(entries) = fs::read_dir(registry_src) {
+            for entry in entries.flatten() {
+                if entry.path().is_dir() && entry.file_name().to_string_lossy().starts_with("index.crates.io") {
+                    let expected_pkg_dir = entry.path().join(format!("{}-{}", name, version));
+                    let manifest_path = expected_pkg_dir.join("Cargo.toml");
+                    
+                    if manifest_path.exists() {
+                        if let Ok(toml_content) = fs::read_to_string(manifest_path) {
+                            if toml_content.contains("[workspace]") {
+                                return PackageType::Workspace;
+                            }
+                            if toml_content.contains("[[bin]]") || toml_content.contains("[bin]") || toml_content.contains("src/main.rs") {
+                                return PackageType::Binary;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    let desc_lower = description.to_lowercase();
+    let name_lower = name.to_lowercase();
+
+    // 1. Приоритет Workspace (мульти-пакеты, системные наборы, явные упоминания)
+    let ws_markers = ["workspace", "collection of", "suite of", "and su", "coreutils", "uutils"];
+    for marker in ws_markers {
+        if desc_lower.contains(marker) || name_lower.contains(marker) {
+            return PackageType::Workspace;
+        }
+    }
+
+    // 2. Расширенные маркеры исполняемых файлов (бинарников)
+    let bin_markers = [
+        "bar", "cli", "utility", "daemon", "application", "tool", 
+        "frontend", "client", "server", "implementation of",
+        "remapper", "keyboard comfort", "driver" // Специально для kanata и подобных системных CLI
+    ];
+    for marker in bin_markers {
+        if desc_lower.contains(marker) {
+            return PackageType::Binary;
+        }
+    }
+
+    PackageType::Library
 }
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
-        println!("Использование:");
-        println!("  Обычный пакет: pkgrs-inspector <pkg_name>");
-        println!("  Экстрактор шрифтов: pkgrs-inspector <pkg_name> <CONST1,CONST2>");
+        println!("{}", "Использование:".yellow());
+        println!("  Обычный пакет:       pkgrs-inspector <pkg_name>");
+        println!("  Экстрактор шрифтов:  pkgrs-inspector <pkg_name> <CONST1,CONST2>");
         return Ok(());
     }
 
     let name = &args[1];
     
-    // Проверяем, передал ли пользователь константы шрифтов вторым аргументом
     let mut is_font_mode = false;
     let mut font_constants = String::new();
     if args.len() == 3 {
@@ -63,7 +103,6 @@ fn main() -> io::Result<()> {
 
     println!("{} Поиск пакета {} в реестре Cargo...", ">>>".green(), name.cyan());
 
-    // Шаг 1: Поиск в реестре
     let search_output = Command::new("cargo")
         .args(["search", name, "--limit", "1"])
         .output()?;
@@ -71,18 +110,16 @@ fn main() -> io::Result<()> {
     let search_str = String::from_utf8_lossy(&search_output.stdout);
     let line = search_str.lines().next().unwrap_or("");
 
-    let mut detected_version = "0.1.0".to_string(); // Дефолт для локальных/шрифтовых пакетов
+    let mut detected_version = "0.1.0".to_string(); 
     let mut description = "Локальный или кастомный пакет.".to_string();
     let mut online_found = false;
 
     if !line.is_empty() && line.contains('=') {
-        if let Some(parts) = line.split_once('#') {
-            let left_side = parts.0.trim();
-            description = parts.1.trim().to_string();
+        if let Some((left_side, right_side)) = line.split_once('#') {
+            description = right_side.trim().to_string();
 
-            let name_ver: Vec<&str> = left_side.split('=').map(|s| s.trim()).collect();
-            if name_ver.len() >= 2 {
-                detected_version = name_ver[1].replace('"', "");
+            if let Some((_, ver_part)) = left_side.split_once('=') {
+                detected_version = ver_part.replace('"', "").trim().to_string();
                 online_found = true;
             }
         }
@@ -90,99 +127,89 @@ fn main() -> io::Result<()> {
 
     if !online_found {
         println!("{} Пакета '{}' нет на crates.io. Переключаюсь на локальный/кастомный режим.", " [!]".yellow(), name);
-        if is_font_mode {
-            println!("{} Обнаружен режим экстрактора шрифтов.", ">>>".green());
-        }
     } else {
         println!("*  {}/{}-{}", CATEGORY, name, detected_version);
         println!("      Latest version available: [from cache]");
         println!("      Description: {}\n", description);
     }
 
-    // Шаг 2: Определение типа (врайтера)
-    let pkg_type = if is_font_mode || name.contains("-fonts") || name.contains("-font") {
+    let mut pkg_type = if is_font_mode {
         PackageType::Font
     } else {
-        // Качаем манифест для проверки типа только если пакет реальный
-        let tmp_manifest_dir = format!("/tmp/pkgrs_manifest_{}", name);
-        let _ = fs::remove_dir_all(&tmp_manifest_dir);
-        let _ = fs::create_dir_all(&tmp_manifest_dir);
-
-        let toml_content = match Command::new("cargo")
-            .args(["download", "--manifest-only", &format!("{}=={}", name, detected_version)])
-            .current_dir(&tmp_manifest_dir).output() {
-                Ok(out) if out.status.success() => String::from_utf8_lossy(&out.stdout).into_owned(),
-                _ => "[lib]\nname=\"fallback\"".to_string()
-            };
-        let _ = fs::remove_dir_all(&tmp_manifest_dir);
-        parse_manifest_type(&toml_content)
+        check_package_type(name, &description, &detected_version)
     };
 
-    let (type_str, writer_flag) = match pkg_type {
-        PackageType::Library => ("библиотека", "-wl"),
-        PackageType::Binary => ("исполняемый файл", "-wb"),
-        PackageType::Workspace => ("комбинированный воркспейс", "-ws"),
-        PackageType::Font => ("шрифтовой экстрактор", "-wf"),
-        PackageType::Empty => {
-            println!("{} Сборка невозможна.", "!!!".red());
-            exit(1);
-        }
-    };
-
-    // Формируем вывод и команду для запуска
-    if pkg_type == PackageType::Font {
-        print!("{}  {}  {} - запускаю {}: pkgrs {} {} {} \"{}\" ? [y/N]: ", 
-               name.cyan(), detected_version.green(), type_str.yellow(), "writer-font".magenta(),
-               writer_flag, name, detected_version, font_constants);
-    } else {
-        print!("{}  {}  {} - запускаю {}: pkgrs {} {} {} ? [y/N]: ", 
-               name.cyan(), detected_version.green(), type_str.yellow(), 
-               match pkg_type {
-                   PackageType::Library => "writer-lib",
-                   PackageType::Binary => "writer-bin",
-                   _ => "writer-ws"
-               }.magenta(),
-               writer_flag, name, detected_version);
-    }
-    
-    io::stdout().flush()?;
-
-    let mut input = String::new();
-    io::stdin().read_line(&mut input)?;
-    let answer = input.trim().to_lowercase();
-
-    if answer == "y" || answer == "yes" {
-        println!("{} Запуск генерации ebuild пакета...", ">>>".green());
-        
-        let writer_status = if pkg_type == PackageType::Font {
-            // Для шрифтов передаем константы аргументом
-            Command::new("pkgrs")
-                .args([writer_flag, name, &detected_version, &font_constants])
-                .status()?
-        } else {
-            Command::new("pkgrs")
-                .args([writer_flag, name, &detected_version])
-                .status()?
+    loop {
+        let (type_str, writer_flag, writer_name) = match pkg_type {
+            PackageType::Library => ("библиотека", "-wl", "writer-lib"),
+            PackageType::Binary => ("исполняемый файл", "-wb", "writer-bin"),
+            PackageType::Workspace => ("воркспейс", "-ws", "writer-ws"),
+            PackageType::Font => ("шрифтовой экстрактор", "-wf", "writer-font"),
         };
 
-        if !writer_status.success() {
-            println!("{} Ошибка на этапе генерации шаблона врайтером.", "!!!".red());
-            exit(1);
-        }
-
-        println!("{} Шаблон готов. Запускаю сборку: pkgrs -l -av {}/{}", ">>>".green(), CATEGORY, name);
-        let merge_status = Command::new("pkgrs").args(["-l", "-av", &format!("{}/{}", CATEGORY, name)]).status()?;
-
-        let pkg_dir = format!("{}/{}/{}", OVERLAY_ROOT, CATEGORY, name);
-        if merge_status.success() {
-            println!("{} Пакет успешно записан, собран и установлен!", "🎉".green());
+        if pkg_type == PackageType::Font {
+            print!("{}  {}  {} - запускаю {}: pkgrs {} {} {} \"{}\" ? [y/N или l/b/w для смены типа]: ", 
+                   name.cyan(), detected_version.green(), type_str.yellow(), writer_name.magenta(),
+                   writer_flag, name, detected_version, font_constants);
         } else {
-            println!("{} Сборка завершилась неудачей. Очистка оверлея...", "!!!".red());
-            if Path::new(&pkg_dir).exists() {
-                let _ = fs::remove_dir_all(&pkg_dir);
-            }
-            exit(1);
+            print!("{}  {}  {} - запускаю {}: pkgrs {} {} {} ? [y/N или l/b/w для смены типа]: ", 
+                   name.cyan(), detected_version.green(), type_str.yellow(), writer_name.magenta(),
+                   writer_flag, name, detected_version);
         }
+        
+        io::stdout().flush()?;
+
+        let mut input = String::new();
+        io::stdin().read_line(&mut input)?;
+        let answer = input.trim().to_lowercase();
+
+        if answer == "l" || answer == "lib" {
+            pkg_type = PackageType::Library;
+            println!("{} Переключено на режим библиотеки.", " >>>".yellow());
+            continue;
+        } else if answer == "b" || answer == "bin" {
+            pkg_type = PackageType::Binary;
+            println!("{} Переключено на режим бинарника.", " >>>".yellow());
+            continue;
+        } else if answer == "w" || answer == "ws" || answer == "workspace" {
+            pkg_type = PackageType::Workspace;
+            println!("{} Переключено на режим воркспейса.", " >>>".yellow());
+            continue;
+        }
+
+        if answer == "y" || answer == "yes" {
+            println!("{} Запуск генерации ebuild пакета...", ">>>".green());
+            
+            let mut writer_cmd = Command::new("pkgrs");
+            if pkg_type == PackageType::Font {
+                writer_cmd.args([writer_flag, name, &detected_version, &font_constants]);
+            } else {
+                writer_cmd.args([writer_flag, name, &detected_version]);
+            }
+
+            if !writer_cmd.status()?.success() {
+                println!("{} Ошибка на этапе генерации шаблона врайтером.", "!!!".red());
+                exit(1);
+            }
+
+            println!("{} Шаблон готов. Запускаю сборку: pkgrs -l -av {}/{}", ">>>".green(), CATEGORY, name);
+            let merge_status = Command::new("pkgrs")
+                .args(["-l", "-av", &format!("{}/{}", CATEGORY, name)])
+                .status()?;
+
+            let pkg_dir = format!("{}/{}/{}", OVERLAY_ROOT, CATEGORY, name);
+            if merge_status.success() {
+                println!("{} Пакет успешно записан, собран и установлен!", "🎉".green());
+            } else {
+                println!("{} Сборка завершилась неудачей. Очистка оверлея...", "!!!".red());
+                if Path::new(&pkg_dir).exists() {
+                    let _ = fs::remove_dir_all(&pkg_dir);
+                }
+                exit(1);
+            }
+        }
+        
+        break;
     }
 
     Ok(())
